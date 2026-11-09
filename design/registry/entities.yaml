@@ -54,7 +54,7 @@
 #   in any other shape is reported as unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-11-09"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -65,25 +65,65 @@ last_updated: ""
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
-
-# Example (remove when first real entry is added):
-#
-# entities:
-#   - name: goblin
-#     status: active              # active | deprecated
-#     source: design/gdd/combat.md
-#     referenced_by:
-#       - design/gdd/combat.md
-#       - design/gdd/inventory.md
-#     health: 40
-#     damage: 8
-#     drops:
-#       - item: goblin_arm        # must match an entry in items section
-#         qty: 1
-#         drop_rate: 0.8          # 0.0–1.0
-#     added: 2026-03-26
-#     revised: ""
+entities:
+  - name: wordsmith_class
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # F1 reads the base block as stat targets; equipment supplies the equipped deltas
+      - design/gdd/ui-shell.md
+    hp: 380
+    atk: 80
+    def: 30
+    crit: 12
+    time_bonus: 0.0
+    passive_ref: wordsmith_fast_answer_mult
+    notes: "Playable class 'Wordsmith' (VI: Chiến Binh Từ Vựng). Base stat block
+      (authored baseline from the validated prototype; balance pass may retune
+      via the tuning process). Consumed by battle-system (formula inputs),
+      equipment (stat targets), ui-shell (pick screen), opponent-ai (ghost
+      identities) — add referenced_by when those GDDs exist."
+    added: 2026-11-08
+    revised: ""
+  - name: grammarian_class
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # F1 reads the base block as stat targets; equipment supplies the equipped deltas
+    hp: 420
+    atk: 62
+    def: 55
+    crit: 6
+    time_bonus: 1.0
+    passive_ref: grammarian_shield_flat
+    notes: "Playable class 'Grammarian' (VI: Pháp Sư Ngữ Pháp). Same consumers
+      as wordsmith_class."
+    added: 2026-11-08
+    revised: ""
+  - name: arcane_speaker_class
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # F1 reads the base block as stat targets; equipment supplies the equipped deltas
+    hp: 360
+    atk: 72
+    def: 38
+    crit: 9
+    time_bonus: 0.5
+    passive_ref: arcane_listening_damage_mult
+    notes: "Playable class 'Arcane Speaker' (VI: Thi Nhân Âm Ngữ). Same consumers
+      as wordsmith_class."
+    added: 2026-11-08
+    revised: "2026-11-09"
 
 
 # ─── ITEMS ───────────────────────────────────────────────────────────────────
@@ -94,7 +134,192 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  # Item ids are hyphenated below exactly as authored in the equipment GDD's
+  # catalog table (the future data file's ids) — registry entries match the
+  # tokens cross-GDD greps search for. Stat values are deliberately NOT
+  # duplicated here: the equipment catalog table is the single source (F1
+  # assembles; battle reads only the assembled LoadoutSnapshot).
+  - name: upgrade_stone
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+      - design/gdd/equipment.md   # FS16 stone contract confirmed: forge grants with no slot target; application is equipment's (F2)
+    stackable: true
+    category: upgrade_material
+    notes: "Đá Nâng Cấp. Forge grants one stone per purification sitting and
+      stops (FS16) — the grant is item-agnostic; the application choice is
+      the player's in equipment. Mature supply ~0.5–1/day (economy check);
+      full catalog ≈ 60 stones ≈ 2–4 months."
+    added: 2026-11-09
+    revised: ""
+  - name: sword-phrasal
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: weapon
+    rarity: epic
+    passive_ref: pre_damage_mult_phrasal
+    notes: "Kiếm Phrasal Verb. Class-A damage hook."
+    added: 2026-11-09
+    revised: ""
+  - name: staff-perfect
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: weapon
+    rarity: rare
+    passive_ref: flat_counter_bonus_perfect
+    notes: "Trượng Thì Hoàn Thành. Def-bearing weapon (def 8 base)."
+    added: 2026-11-09
+    revised: ""
+  - name: bow-collocation
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: weapon
+    rarity: legendary
+    passive_ref: pre_damage_mult_collocation
+    notes: "Cung Collocation. Highest weapon atk (38)."
+    added: 2026-11-09
+    revised: ""
+  - name: dagger-idiom
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: weapon
+    rarity: common
+    passive_ref: vocab_example_on_miss
+    notes: "Dao Găm Thành Ngữ. Re-authored from the prototype ('no passive' →
+      vocab affordance — failed the Pillar 3 design test). Rides battle's
+      existing miss event (no new hook)."
+    added: 2026-11-09
+    revised: ""
+  - name: shield-steadfast
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: armor
+    rarity: epic
+    passive_ref: combo_keep_on_miss_once
+    notes: "Khiên Bất Khuất. perLevel def RETUNED 4→3 at authoring — 4 would
+      push the worst-case def to 121 and break the 120 band."
+    added: 2026-11-09
+    revised: ""
+  - name: cloak-article
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: armor
+    rarity: common
+    passive_ref: flat_time_bonus
+    notes: "Áo Choàng Mạo Từ. Stat-carried time +0.5 — no hook; rides the
+      snapshot's time stat."
+    added: 2026-11-09
+    revised: ""
+  - name: plate-conditional
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: armor
+    rarity: rare
+    passive_ref: pre_shield_mult_conditional
+    notes: "Giáp Câu Điều Kiện. Highest armor def (22 base, +3/L — the
+      band's heaviest contributor)."
+    added: 2026-11-09
+    revised: ""
+  - name: hourglass-scholar
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: accessory
+    rarity: legendary
+    passive_ref: round_time_bonus_grammar
+    notes: "Đồng Hồ Cát Học Giả. Stat-only at level 0 (crit 7); the passive
+      is the grammar-round time bonus."
+    added: 2026-11-09
+    revised: ""
+  - name: ring-ipa
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: accessory
+    rarity: rare
+    passive_ref: option_audio_replay
+    notes: "Nhẫn Phát Âm IPA. Re-authored from the prototype ('+20 mana' →
+      audio affordance — items cannot grant mana, hero-class constraint)."
+    added: 2026-11-09
+    revised: ""
+  - name: charm-latin
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: accessory
+    rarity: epic
+    passive_ref: vocab_etymology_hint
+    notes: "Bùa Từ Gốc Latin. Reads question-content's etymology field."
+    added: 2026-11-09
+    revised: ""
+  - name: pet-owl
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: pet
+    rarity: legendary
+    passive_ref: answer_eliminate_two
+    notes: "Cú Tinh Anh. Elimination draw is battle's seeded stream —
+      deterministic in (seed, round, wrong set), replay-identical."
+    added: 2026-11-09
+    revised: ""
+  - name: pet-cat
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    category: equipment
+    stackable: false
+    slot: pet
+    rarity: rare
+    passive_ref: spell_first_letter_assist
+    notes: "Mèo Chính Tả. Surfaces in the ult spell interaction's tiles
+      (speech-io); mandatory hp 20 raises the reachable hp minima to
+      460/500/440."
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #
@@ -123,10 +348,338 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: retry_delay
+    status: active
+    source: design/gdd/accounts-backend.md
+    referenced_by:
+      - design/gdd/accounts-backend.md
+      - design/gdd/forge-srs.md   # forge session-resolution commit rides the same ladder (FS22)
+      - design/gdd/ui-shell.md
+    variables:
+      - n
+      - B
+      - J_max
+      - D_max
+      - N
+    output_range: [1, 30]
+    expression: "delay_n = min(B * 2^n + uniform(0, J_max), D_max); after N consecutive failures enter Unsaved-state"
+    notes: "Client commit-retry backoff (F3). Units: seconds. Defaults B=1,
+      J_max=0.5, D_max=30, N=5. Executed client-side for EVERY system's
+      commit (battle end, forge action, equip, quest claim, tower result);
+      at max failures the client enters Unsaved-state with the
+      'Lưu không thành công — Thử lại' banner (ui-shell implements it).
+      Manual retry restarts the ladder at n=0."
+    added: 2026-11-08
+    revised: "2026-11-08 (output_range corrected [1, 30.5] -> [1, 30]: jitter sits inside min(), so the cap bounds the whole delay)"
+
+  - name: battles_before_repeat
+    status: active
+    source: design/gdd/question-content.md
+    referenced_by:
+      - design/gdd/question-content.md
+    variables:
+      - N_pool
+      - k
+    output_range: [1, 16]
+    expression: "battles_before_repeat = floor(N_pool / k)"
+    notes: "Content-variety interaction rule (F5). N_pool = questions in the
+      pool being drawn from (4-16); k = max questions drawn from that ONE pool
+      in a single battle (1-4). Burnout-guard design rule: require >= 2 x
+      battles_per_typical_session (battle-system defines that quantity — add
+      here when its GDD exists). At defaults: floor(8/1) = 8 battles per
+      round-type."
+    added: 2026-11-08
+    revised: ""
+
+  - name: grammarian_proc_count
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+    variables:
+      - run_i
+      - proc_streak
+    output_range: [0, 1]
+    expression: "shields_gained_per_battle = sum(floor(run_i / proc_streak)),
+      proc_streak = 3; runtime predicate: proc fires when run_correct mod 3 == 0"
+    notes: "F1 — Grammarian Syntax Wards proc count per battle (hero-class GDD).
+      Output range [0,1] is at MVP battle length 4; general max is
+      floor(battle_rounds / 3). Re-trigger clause is dormant at 4-round battles.
+      Consumed by battle-system's shield application (add here when its GDD
+      exists)."
+    added: 2026-11-08
+    revised: ""
+
+  - name: ghost_round_resolution
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+    variables:
+      - roll
+      - accuracy
+    output_range: [0, 1]
+    expression: "ghost_correct = roll < accuracy (strict; roll is a fixed-point
+      integer draw in [0, 2^53) from the battle's seeded ghost stream, threshold
+      = round(accuracy * 2^53))"
+    notes: "F1 — per-round opponent resolution predicate. One draw per round, in
+      round order, no re-draw (stream contract F2 lives in the GDD; the PRNG
+      algorithm choice is ADR territory — OA-OQ2). Question-unaware at MVP; no
+      mana interaction (battle-system owns mana). Consumed by battle-system
+      (round outcome + reveal scheduling) — add referenced_by when its GDD
+      exists."
+    added: 2026-11-09
+    revised: ""
 
 # Example:
-#
+  - name: battle_speed_multiplier
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # effective time feeds round_time_s (B1/B2); gear never touches the 0.3 slope or 1.3 cap
+      - design/gdd/ui-shell.md
+    variables:
+      - remaining_fraction
+      - elapsed_s
+      - round_time_s
+    output_range: [1.0, 1.3]
+    expression: "speedMult = 1 + 0.3 * remaining_fraction; remaining_fraction = max(0, 1 - elapsed_s / round_time_s); round_time_s = max(5, base_round_time_s + hero_effective_time)"
+    notes: "B2 — Pillar 1 (Speed Is Damage) made mechanical. Attack rounds only
+      (vocab_strike, listening_pierce, fallback vocab); never shields,
+      counters or the ultimate. ui-shell displays the live value during the
+      countdown (derived read-only display). Consumes base_round_time_s."
+    added: 2026-11-09
+    revised: ""
+
+  - name: battle_crit_rule
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # crit_stat arrives via the LoadoutSnapshot; crit_mult 1.25 stays battle-owned
+    variables:
+      - elapsed_ms
+      - fast_answer_threshold
+      - crit_stat
+    output_range: [1.0, 1.25]
+    expression: "if elapsed_ms < fast_answer_threshold: crit_mult = 1.25 (no stream draw); else: crit_mult = (crit_stream.draw() < crit_stat/100) ? 1.25 : 1.0"
+    notes: "B10 — guaranteed crit under 3 s (strict; exactly 3000 is NOT fast),
+      else one probability draw from the battle-owned crit stream. Scope:
+      damage rounds only (vocab_strike, listening_pierce, fallback vocab);
+      never grammar_shield, never ultimate_burst. crit_mult 1.25 is
+      battle-owned. hero-class's consumption contract references this rule;
+      HC7 owns the shared-threshold contract."
+    added: 2026-11-09
+    revised: ""
+
+  - name: battle_shield_gain
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/equipment.md   # def <= 120 band adopted (OQ-BS4 closed); eq_pre_shield_mult_conditional multiplies the B6 float
+    variables:
+      - def
+    output_range: [80, 999]
+    expression: "shield_gained = round_half_up(80 + def * 0.3)"
+    notes: "B6 — grammar_shield correct-round shield. Deliberately not speed-
+      or crit-scaled. Grammarian's +60 flat (grammarian_shield_flat) joins
+      the pool additively and never enters this expression. Pool rules: no
+      decay, no cap at MVP (structural worst case 157 = 97 + 60 — no-gear
+      only; with the plate-conditional x1.25 hook the pool bound becomes 205
+      and this printed figure goes stale — pool-cap decision rides OQ-EQ6).
+      Uncapped in def — equipment_def_band = 120 (adopted 2026-11-09,
+      enforced by construction + F3 fail-fast assert)."
+    added: 2026-11-09
+    revised: "2026-11-09"
+
+  - name: battle_mana_gain
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+    variables:
+      - base_gain
+      - mana
+    output_range: [0, 100]
+    expression: "mana_gained = min(100 - mana, base_gain); base_gain = 30 (correct) | 10 (wrong/timeout)"
+    notes: "B8 — flat for every class and round type (Core Rule 13). The
+      former Arcane multiplier slot (arcane_listening_mana_mult 1.35) was
+      removed 2026-11-09 (cross-review D-B1: provably inert — best 3-round
+      case 30+10+41 = 81 < 90 gate); Arcane's passive now lives on listening
+      damage (arcane_listening_damage_mult). Integer-exact at MVP;
+      round_half_up retained for future fractional gains. Cap 100; no carry
+      between battles. Gate: ultimate_mana_gate 90 (inclusive).
+      opponent-ai's mana note: the ghost participates in no mana arithmetic."
+    added: 2026-11-09
+    revised: "2026-11-09"
+    revised: ""
+
+  - name: forge_rune_ladder
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+      - design/gdd/ui-shell.md
+    variables:
+      - box
+      - event
+      - now
+      - forge_fresh_delay
+      - forge_settle_delay
+      - forge_master_delay
+    output_range: [1, 3]
+    expression: "drop/reset/wrong/re_drop -> box=1, due_at=now+forge_fresh_delay;
+      correct: box 1->2 due_at=now+forge_settle_delay; 2->3 due_at=now+forge_master_delay;
+      correct at box 3 -> Purified. eligible(rune,t) iff due_at <= t (server clock)."
+    notes: "F1 — the three-box Leitner ladder per cursed rune. due_at computed
+      from the SERVER clock inside the atomic forge commit (accounts-backend
+      AC-C1); the client never derives eligibility. Stone gate needs a
+      purification sitting: all 3 session runes at Box 3 at composition,
+      3/3 correct (forge-srs Rule 6). Future referenced_by candidates:
+      accounts-backend (due_at storage/validation), ui-shell (queue
+      countdown display) — add when those GDDs reference it."
+    added: 2026-11-09
+    revised: ""
+
+  - name: simulated_quality
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/battle-system.md   # B5 consumes quality; OQ-BS5 floor analysis references the band
+    variables:
+      - platform_rng_draw
+      - sim_quality_band_low
+      - sim_quality_band_high
+      - quality_precision_decimals
+    output_range: [0.88, 0.98]
+    expression: "quality = round_half_up_to_precision(sim_quality_band_low + platform_rng() * (sim_quality_band_high - sim_quality_band_low), quality_precision_decimals)"
+    notes: "S1 — simulated mic-path quality for the ultimate round. One
+      platform-RNG draw per submission (never battle's seeded ghost/crit
+      streams); the RECORDED 2-decimal value is what battle consumes and
+      replays (live == replay by construction). Sim uses platform RNG, so
+      no PRNG-ADR dependency. Battle's B5 output range 0-205 holds: mic
+      path alone spans 181-201 at Wordsmith base; 0 and 205 are
+      spell-path-only termini."
+    added: 2026-11-09
+    revised: ""
+
+  - name: spell_path_quality
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/battle-system.md   # B5 consumes quality; spell path is the only route to the 0 and 205 termini
+    variables:
+      - target_word
+      - attempt
+    output_range: "[0.0, 1.0] (exactly {0.0, 1.0})"
+    expression: "quality = 1.0 if normalize(attempt) == normalize(target_word) else 0.0; normalize(s) = collapse_internal_whitespace(trim(to_lowercase(nfc(s))))"
+    notes: "S2 — ult spell-path quality. Normalization: NFC, lowercase,
+      trim, collapse internal whitespace; punctuation significant at MVP
+      (spelling-test semantics). No partial credit. The only MVP route to
+      B5's 0-damage failure state, the fizzle presentation, and the exact
+      205 terminus."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_tier_division
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+    variables:
+      - rp
+      - floor_t
+      - next_floor_t
+    output_range: "[Bronze III .. Grandmaster I] - 15 states, pure function of rp"
+    expression: "tier = max{t : floor_t <= rp}; offset = rp - floor_t (GM only: offset = min(offset, 300)); div_index = min(2, floor(3 * offset / span_t)); division = [III, II, I][div_index]; span_t = next_floor_t - floor_t (Bronze 1000; Silver/Gold/Diamond/GM 300 via GM's virtual next-floor 2200)"
+    notes: "RL1 - tier/division resolver, integer arithmetic only, derived on
+      read (never stored - storage holds one rp integer). Floors inclusive
+      (rp 1000 = Silver III); GM I open-ended (rp >= 2100 forever). Bronze's
+      1000-span thirds are uneven by 1 RP (0-333/334-666/667-999) - cosmetic
+      integer artifact, do not fix into floats. Consumes ranked_tier_floors.
+      ui-shell consumes the (tier, division) pair and the old->new transition
+      (badge identity change); accounts-backend stores only rp."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_peer_board
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+    variables:
+      - season_id
+      - account_id
+      - peer_index_i
+      - season_day_d
+      - floor_T
+      - span_T
+    output_range: "rp_peer 0..base_i+120; mastered_i max(0, M-80)..M+120; streak_i max(0, S-5)..S+8"
+    expression: "peer_seed_i = H(season_id || account_id || i || 'roster'); base_i = max(0, floor_T - 100 + rng_int(peer_seed_i||'base', 0, span_T + 200)); drift_(i,d) = rng_int(peer_seed_i||'drift'||d, -20, +20); rp_peer(i,d) = max(0, base_i + sum_{k=1..d} drift_(i,k)); mastered_i = max(0, M + rng_int(peer_seed_i||'mastered', -80, +120)); streak_i = max(0, S + rng_int(peer_seed_i||'streak', -5, +8)); rng_int(seed,lo,hi) = lo + (H(seed) mod (hi-lo+1))"
+    notes: "RL3 - simulated-peer weekly trajectory (14 peers + player per
+      league group). H = the PRNG ADR's pinned hash primitive (OQ-BS1 /
+      OA-OQ2) - ranked-league pins no algorithm, mirroring opponent-ai F2;
+      modulo-bias blessing owed there. Drift is STATELESS per (peer, day) -
+      recomputed, never accumulated; server + client derive identical boards
+      from season_id + account_id alone. Peers RP-bracketed +-100 beyond the
+      season-start tier band (zone dividers stay populated; peer tier labels
+      cosmetic). Study flavor bracketed to the player's season-start counters
+      so a fresh account (mastered 0, meta MP6) gets a contestable board.
+      Pillar 4: symmetric drift - peers neither rigged ahead nor behind.
+      Consumed by ui-shell (PvP + Study board rows)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_module_rotation
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+    variables:
+      - unix_time_ms
+      - days_ict
+    output_range: "{daily, toeic, ielts, it} - one module per server day, uniform"
+    expression: "days_ict = floor((unix_time_ms + 25200000) / 86400000)  [ICT = UTC+7, fixed, no DST]; module = MODULES[days_ict mod 4], MODULES = [daily, toeic, ielts, it] (fixed order)"
+    notes: "RL4 - daily ranked content rotation. Keys on days_ict, NOT
+      season-day: a 7-day season is 3 mod 4, so each season opens on a
+      different module (week-over-week variety for free). Reuses the
+      rotation module's existing module x round-type pools - no new pool
+      type, no question-content change (min_battle_pool_size gate
+      unchanged). The rotation owns the INDEX; the module set is
+      question-content's enum (no local copy)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_season_id
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+    variables:
+      - days_ict
+    output_range: "[0, inf) - monotone non-decreasing week index"
+    expression: "season_id = floor((days_ict + 3) / 7); increments exactly when days_ict = 4 (mod 7) = Monday 00:00 Asia/Ho_Chi_Minh; season day d = (days_ict + 3) mod 7 (Mon = 0 .. Sun = 6)"
+    notes: "RL5 - season identifier/boundary. Epoch-week, NOT ISO week: ISO's
+      year-boundary rollover would break same-season-same-roster determinism.
+      Unix day 0 (1970-01-01) was a Thursday; +3 lands the step on Monday.
+      Seasons do NOT reset RP at Alpha - rollover re-rolls the board and
+      records the placement summary only. Server clock governs (device clock
+      decides nothing). Consumed by accounts-backend (season attribution,
+      rollover commit) and ui-shell (season label)."
+    added: 2026-11-09
+    revised: ""
+
+
 # formulas:
 #   - name: damage_formula
 #     status: active
@@ -156,10 +709,1375 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+  - name: xp_bar_progress
+    status: active
+    source: design/gdd/ui-shell.md
+    referenced_by:
+      - design/gdd/ui-shell.md
+    variables:
+      - cumulative_xp
+      - xp_per_level
+    output_range: "level >= 1 (unbounded above); progress [0.0, 0.999)"
+    expression: "level = floor(cumulative_xp / xp_per_level) + 1; xp_into_level = cumulative_xp mod xp_per_level; progress = xp_into_level / xp_per_level"
+    notes: "F-UI1 - DISPLAY-side render of meta's MP1 hero level + XP bar
+      (Home hub, result modal). Level-1 base per meta Core Rule 4;
+      xp_per_level referenced from this registry (1000 flat, meta-owned),
+      never redefined. An exact multiple of 1000 renders the completion
+      flash transient, then the next level at 0% - the bar never settles
+      full (ui-shell E5). Consumes meta's cumulative_xp ledger."
+    added: 2026-11-09
+    revised: ""
+  - name: vi_vn_number_group
+    status: active
+    source: design/gdd/ui-shell.md
+    referenced_by:
+      - design/gdd/ui-shell.md
+      - design/gdd/localization.md   # consumes F-UI2 as locale data (Core Rule 5); never redefines (localization AC-LC5)
+    variables:
+      - n
+    output_range: "string; no abbreviation at MVP"
+    expression: "formatted(n) = digits of n grouped in blocks of 3 from the right, joined with '.', applied only when n >= 1000"
+    notes: "F-UI2 - DISPLAY formatting for every integer currency surface
+      (gold strip, RP surfaces, result-modal reward rows). Carries meta's
+      vi-VN separator carry-in from launch. No abbreviation/compaction at
+      MVP (E6 - faucet ceiling keeps values readable); a negative upstream
+      value renders as wrong, never masked (Pillar 4). Downstream:
+      localization inherits the rule, not a new format."
+    added: 2026-11-09
+    revised: ""
+  - name: due_countdown_format
+    status: active
+    source: design/gdd/ui-shell.md
+    referenced_by:
+      - design/gdd/ui-shell.md
+      - design/gdd/localization.md   # consumed as a locale-data rule (Core Rule 5); never redefined
+    variables:
+      - due_at
+      - server_now
+    output_range: '"ready" | "resting · <1 m" | "resting · {N} m" | "resting · {N} h" (N 1-72 at current delays)'
+    expression: "remaining_s = (due_at - server_now)/1000; <=0 -> ready; <60 -> '<1 m'; <3600 -> round_half_up(remaining_s/60) m; else round_half_up(remaining_s/3600) h"
+    notes: "F-UI3 - forge queue due pill. SERVER CLOCK ONLY (same authority
+      as forge_rune_ladder eligibility). The 'ready' branch is the same
+      predicate forge uses, so display can never contradict state; the
+      display NEVER gates Start Session - forge state wins on a disagreeing
+      tick. Consumes the registered box delays (10 min/24 h/72 h)."
+    added: 2026-11-09
+    revised: ""
+  - name: quest_progress_fraction
+    status: active
+    source: design/gdd/ui-shell.md
+    referenced_by:
+      - design/gdd/ui-shell.md
+    variables:
+      - progress
+      - goal
+    output_range: [0.0, 1.0]
+    expression: "fraction = min(progress, goal) / goal; goal <= 0 guard -> 0 (never NaN to the DOM)"
+    notes: "F-UI4 - quest board bar/percent. Meta MP3 already clamps at
+      goal (MP-AC7); the min() here is DEFENSIVE against transient display,
+      not ownership. Rendered as round_half_up(fraction x 100)% and bar
+      width from the single fraction."
+    added: 2026-11-09
+    revised: ""
+  - name: speed_mult_display
+    status: active
+    source: design/gdd/ui-shell.md
+    referenced_by:
+      - design/gdd/ui-shell.md
+    variables:
+      - speedMult
+    output_range: [1.00, 1.30]
+    expression: "displayed = round_half_up(speedMult * 100) / 100 (exactly 2 dp)"
+    notes: "F-UI5 - battle HUD live speed readout. Read-only quantization
+      of battle's B2 value (battle_speed_multiplier [1.0, 1.3]) - the
+      shell NEVER recomputes from elapsed time. No active countdown
+      renders the neutral x1.00; an active round at full time remaining
+      renders battle's 1.30."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_purge_funnel_chain
+    status: active
+    source: design/gdd/analytics.md
+    referenced_by:
+      - design/gdd/analytics.md
+      - design/gdd/forge-srs.md   # OQ-FS5 requests exactly these telemetry events
+    variables:
+      - rune_id
+      - step
+    output_range: "ordered steps: drop -> box1_pass -> box2_pass -> purified -> stone_applied (re-drops re-emit earlier steps for the same rune_id)"
+    expression: "forge_funnel event per transition; C_k counts DISTINCT rune_ids per step (F-AN8) - event-counting would let C_1 exceed 1"
+    notes: "The telemetry event chain analytics owns and forge-srs emits at
+      each purification transition (analytics Core Rule 1 event vocabulary).
+      Validates forge-srs F3's p estimate and the day-5-8 first-stone claim
+      (with F-AN9 percentiles). Funnel events are never sampled and never
+      dropped silently (DROP_GATE 1% trust rule)."
+    added: 2026-11-09
+    revised: ""
+  - name: locale_coverage
+    status: active
+    source: design/gdd/localization.md
+    referenced_by:
+      - design/gdd/localization.md
+    variables:
+      - R
+      - vi(k)
+      - en(k)
+      - keep_en(k)
+    output_range: "coverage [0.0, 1.0]; derived en_placeholder_debt = |R| x (1 - coverage), 0..|R|"
+    expression: "coverage(L) = |{ k in R : vi(k) != empty AND ( vi(k) != en(k) OR keep_en(k) ) }| / |R|; release gate vi-VN: coverage = 1.0 (NOT tunable below 1.0)"
+    notes: "F1 - Alpha release gate: every reference key carries an AUTHORED
+      vi value (non-empty AND not its EN placeholder; keep_en: true keys
+      exempt from the placeholder test only). Deprecated keys excluded from
+      R. Dev builds warn + log debt; release fails hard. F1 counts authored
+      values; the separate 'every key state Shipped' release condition is
+      localization AC-LC2."
+    added: 2026-11-09
+    revised: ""
+  - name: vi_en_length_ratio
+    status: active
+    source: design/gdd/localization.md
+    referenced_by:
+      - design/gdd/localization.md
+    variables:
+      - vi(k)
+      - en(k)
+      - r_max
+    output_range: "ratio [0, inf); one-sided warning at ratio > r_max (strict), never a build failure"
+    expression: "ratio(k) = len(vi(k)) / max(len(en(k)), 1); warning: ratio(k) > r_max -> flag key for the long-string layout check (localization AC-LC12's input)"
+    notes: "F2 - soft truncation warning (Core Rule 9). One-sided:
+      shorter-than-EN vi never flags. r_max tunable via
+      vi_en_length_ratio_max. Clipping itself is only provable visually
+      (screenshot gate). Consumes F-UI2 surfaces but never redefines
+      number formatting."
+    added: 2026-11-09
+    revised: ""
+  - name: honesty_copy_instances
+    status: active
+    source: design/gdd/localization.md
+    referenced_by:
+      - design/gdd/localization.md
+    variables:
+      - D
+      - norm
+    output_range: "instances(s) 1..|D|; gate duplicate_strings = |{s : instances(s) > 1}| = 0"
+    expression: "instances(s) = |{ k in D : norm(vi(k)) = norm(s) }|; gate = 1 for every disclosure string s (fixed, not tunable); norm = lowercase + whitespace collapse"
+    notes: "F3 - Pillar-4 honesty-copy uniqueness (Core Rule 8). D = keys
+      flagged fidelity: exact (provisionally ui-shell Core Rule 6
+      disclosure surfaces until ranked-league + accounts-backend enumerate
+      theirs - localization OQ-LC2). Release-blocking for fidelity:exact
+      keys, dev warning otherwise. NO fuzzy matching by design - softened
+      paraphrases are the fidelity review's job (localization AC-LC8)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_band_widening
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    variables:
+      - t
+      - B_start
+      - delta_step
+      - t_step
+      - B_cap
+    output_range: [100, 350]
+    expression: "band(t) = min(B_cap, B_start + delta_step * floor(t / t_step)); pair allowed iff |rp_A - rp_B| <= min(band(t_wait_A), band(t_wait_B))"
+    notes: "R2 - PvP matchmaking band (R = real-pvp's formula series). Defaults
+      B_start 100, delta_step 50, t_step 9.0 s, B_cap 300; Grandmaster opens
+      200 / caps 350 (smallest population). min-consent pairing: each player
+      only meets opponents inside their own currently-widened band.
+      Structural guarantee: Bronze-vs-Grandmaster impossible by construction
+      (tier floors 0/1000/1300/1600/1900). Chosen over a +-28-step schedule
+      (one-win-delta units): +-28 steps cannot form pairs in a small
+      population - most sessions would hit the 45 s fallback. Past T_max
+      (pvp_queue_fallback_s) the band freezes at cap."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_elapsed_credit
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    variables:
+      - t_commit_receipt
+      - t_round_start
+      - RTT_ms
+    output_range: [0, 250]
+    expression: "credited_elapsed_ms = max(0, (t_commit_receipt - t_round_start) - round_half_up_ms(min(RTT_ms / 2, 250)))"
+    notes: "R3 - latency-compensated elapsed credit feeding B2/B10 verbatim
+      (units: ms of credit). Server-measured RTT only (EWMA a=0.25, spike
+      clamp 1000 ms, ping cadence 2000 ms); client-reported timing never
+      trusted. Full compensation for RTT <= 500 ms; above it the excess is
+      the player's own cost. Residual exploit: pong-delay inflation pockets
+      the full cap - bounded, self-costly, accepted at Alpha with analytics
+      monitoring (OQ-RVP7); an RTT floor would punish exactly the
+      genuinely-laggy players the credit exists to help."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_simultaneous_ko
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    variables:
+      - hp_A_after
+      - hp_B_after
+      - hp_A_before
+      - hp_B_before
+      - hp_X_max
+    output_range: [0, 2]
+    expression: "if hp_A_after <= 0 and hp_B_after <= 0: winner = argmax(hp_before / hp_max) by strict compare; exact fraction tie -> DRAW"
+    notes: "R6 - mutual-KO resolution, applies at EVERY round resolve (both
+      B7 counters can mutually KO, not just round-4 ults). output_range
+      encodes {0: A, 1: B, 2: draw}. Deterministic from server state - no
+      RNG, no seed (Core Rule 18 replay discipline); the pre-round HP
+      fraction is exactly the quantity B12 ranks on, so the tiebreak
+      extends 'who played better so far' without a new metric."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_verdict
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    variables:
+      - hp_A
+      - hp_B
+      - hp_A_max
+      - hp_B_max
+    output_range: [0, 2]
+    expression: "hp KO xor -> survivor wins; both KO -> pvp_simultaneous_ko; both alive after round 4 -> strict compare hp/hp_max fractions, equal -> DRAW; RP +28 / -14 / 0"
+    notes: "R8 - B12 made symmetric for two humans: PvE's tie-goes-to-player
+      (>=) is deliberately NOT reused; tie -> draw pays 0 and moves no
+      streak. Denominators are each player's OWN hero HP - no ghost HP
+      anywhere in PvP (ghost_hp_* and ghost_base_damage are PvE-owned and
+      unreferenced here). output_range encodes {0: A, 1: B, 2: draw}."
+    added: 2026-11-09
+    revised: ""
+constants:
+  - name: pvp_grace_window_s
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    value: 20
+    unit: seconds before forfeit
+    notes: "R5 - reconnect grace after a mid-match disconnect. Safe band 10-30
+      (10 < one round feels random; 30 = three rounds of dead air for the
+      honest opponent). The round engine NEVER pauses during grace: the
+      absent player's pending round auto-resolves as a timeout at their
+      personal deadline (outgoing 0, incoming damage still applies) -
+      non-pausing removes disconnect-as-stall. Forfeit pays the registered
+      rp deltas (+28/-14); verdict precedence KO > forfeit. ui-shell
+      renders the honest banner countdown with this value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_queue_fallback_s
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    value: 45
+    unit: seconds (T_max)
+    notes: "R1 - queue wait budget before the honest fallback prompt (keep
+      waiting / ghost duel labelled simulated). Never an automatic
+      substitution - Core Rule 13. Repeats every 45 s while the player
+      keeps waiting; the R2 band freezes at its cap past this point. Safe
+      band 30-60. ui-shell's matchmaking surface renders the choice with
+      this value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_latency_credit_cap_s
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    value: 0.25
+    unit: seconds (locked, Core Rule 16)
+    notes: "Maximum elapsed credit from pvp_elapsed_credit. LOCKED by Core
+      Rule 16 - not a tuning knob. Favours the laggy player (full
+      compensation for RTT <= 500 ms), never beyond; bounds the
+      pong-inflation exploit regardless of inflated RTT size. 250 ms is
+      8.3% of the 3000 ms fast-crit threshold (fast_answer_threshold) and
+      the largest cap that keeps the compensable population inside the
+      crit guarantee."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_resolve_beat_ms
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    value: 1000
+    unit: milliseconds
+    notes: "R4 - fixed theatre beat between a PvP round's t_both_done and
+      the resolve broadcast. Safe band 800-1500 - sits inside
+      opponent-ai's reveal-delay band (1000/800/1200/1500 ms), so
+      ui-shell's existing reveal theatre renders unchanged ('ghost
+      answering' gesture becomes 'opponent answering', same pacing
+      budget). Provisional default - playtest before locking (OQ-RVP2).
+      Never gates battle-state advancement (battle's presentation-budget
+      rule)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: pvp_round_gap_ms
+    status: active
+    source: design/gdd/real-pvp.md
+    referenced_by:
+      - design/gdd/real-pvp.md
+    value: 100
+    unit: milliseconds
+    notes: "R4 - render guard between a resolve broadcast and the next
+      round's server start. Safe band 50-250. Presentation budget, not
+      battle time."
+    added: 2026-11-09
+    revised: ""
+
+  - name: vi_en_length_ratio_max
+    status: active
+    source: design/gdd/localization.md
+    referenced_by:
+      - design/gdd/localization.md
+    value: 1.5
+    unit: "vi chars per en char (warning threshold)"
+    notes: "F2's r_max (localization). Safe band 1.3-2.0. At 1.2 roughly half
+      the catalog false-flags (warning noise trains devs to ignore it); at
+      3.0 a 3x string clips a fixed HUD region unflagged. Warning only -
+      never a build failure; clipping is proven by screenshot (AC-LC12)."
+    added: 2026-11-09
+    revised: ""
+  - name: min_battle_pool_size
+    status: active
+    source: design/gdd/question-content.md
+    referenced_by:
+      - design/gdd/question-content.md
+      - design/gdd/battle-system.md
+    value: 8
+    unit: questions per pool
+    notes: "Build-gate floor per module x round-type battle pool (F1). Safe band
+      8-16. Consumed by the content build gate; battle-system reads it for
+      mixing (its GDD is authored). Battle Rule 22 (2026-11-09): friend/ranked
+      draws k=1 per round from this pool, confirming A1; tower encounters draw
+      from the mixed stage pool instead."
+    added: 2026-11-08
+    revised: "2026-11-09"
+    revised: ""
+  - name: min_tower_stage_pool_size
+    status: active
+    source: design/gdd/question-content.md
+    referenced_by:
+      - design/gdd/question-content.md
+      - design/gdd/tower.md
+    value: 6
+    unit: questions per pool
+    notes: "Build-gate floor per module x stage tower pool, non-boss (F2).
+      Safe band 6-12. Guarantees no repeat within one attempt and at least 2
+      differing questions between stage retries (a full 4-question repeat
+      stays possible at minimum size — 1/15); the battle Rule 22 composition
+      gate adds >= 1 question per round-type. Tower's GDD is authored."
+    added: 2026-11-08
+    revised: "2026-11-09"
+  - name: min_tower_boss_pool_size
+    status: active
+    source: design/gdd/question-content.md
+    referenced_by:
+      - design/gdd/question-content.md
+      - design/gdd/tower.md
+    value: 4
+    unit: questions per pool
+    notes: "Build-gate floor per module x boss pool (F3). Safe band 4-8.
+      Deliberately equals battle length: no in-fight repeat, cross-attempt
+      repeat accepted for once-per-floor content. Raise to 6+ if boss floors
+      become replayable grind."
+    added: 2026-11-08
+    revised: ""
+  - name: min_global_glossary_size
+    status: active
+    source: design/gdd/question-content.md
+    referenced_by:
+      - design/gdd/question-content.md
+      - design/gdd/forge-srs.md   # forge_filler draws from the global glossary; E10 exclusion at runtime (FS6)
+    value: 24
+    unit: glossary entries
+    notes: "Build-gate floor on the global glossary (F4). Safe band 24-120.
+      The MVP bank ships 32 entries (target, not gate). forge-srs filler
+      draws from this glossary (add here when its GDD exists)."
+    added: 2026-11-08
+    revised: ""
+  - name: wordsmith_fast_answer_mult
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+    value: 1.2
+    unit: damage multiplier
+    notes: "Wordsmith passive 'Lưỡi Kiếm Tốc Ngôn' magnitude — correct vocab_strike
+      answered in under fast_answer_threshold multiplies that strike's damage.
+      Applied inside battle-system's damage formula (hero-class supplies the
+      factor, battle supplies the equation). Safe band 1.10-1.30. Vocab rounds
+      only; keys on round_type, not question tags."
+    added: 2026-11-08
+    revised: ""
+  - name: grammarian_shield_flat
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+    value: 60
+    unit: shield points per proc
+    notes: "Grammarian passive 'Kết Giới Cú Pháp' magnitude — flat shield granted
+      each time the correct-answer streak reaches a multiple of 3 (see formula
+      grammarian_proc_count). Deliberately flat, def-independent: does NOT enter
+      battle's shield = 80 + def*0.3. Safe band 40-80. Shield cap/decay rules are
+      battle-system's (open interface item)."
+    added: 2026-11-08
+    revised: ""
+  - name: arcane_listening_mana_mult
+    status: deprecated
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+    value: 1.35
+    unit: mana multiplier
+    notes: "DEPRECATED 2026-11-09 (cross-review D-B1, never-delete rule): the
+      passive was provably inert — no 3-round mana sequence could cross the 90
+      ult gate with it (best case 30+10+41 = 81 < 90) — so Arcane's passive
+      moved to listening damage (arcane_listening_damage_mult). Mana is flat
+      +30/+10 for every class (battle Core Rule 13). Retained for history; no
+      consumer reads it."
+    added: 2026-11-08
+    revised: "2026-11-09"
+
+  - name: arcane_listening_damage_mult
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+    value: 1.2
+    unit: damage multiplier
+    notes: "Arcane Speaker passive 'Cộng Hưởng Âm Vị' (re-scoped 2026-11-09,
+      cross-review D-B1) — a RATE, not an amount: multiplies B4 listening
+      damage on correct listening_pierce rounds, unconditional (not
+      speed-gated). Enters battle's B4 as class_listening_damage_mult,
+      defaulting to 1.0 for other classes; B4 rounds once at its end, so the
+      multiplier commutes with the speed/crit factors. Worked example
+      (atk 72): (70 + 72 * 0.45) * 1.2 = 122.88 -> 123 slow/no-crit. Safe
+      band 1.10-1.30."
+    added: 2026-11-09
+    revised: ""
+  - name: fast_answer_threshold
+    status: active
+    source: design/gdd/hero-class.md
+    referenced_by:
+      - design/gdd/hero-class.md
+      - design/gdd/battle-system.md
+      - design/gdd/speech-io.md   # listed as referenced-never-redefined (listening has no speed exemption)
+      - design/gdd/equipment.md   # cited in the time threat check — thresholds compare elapsed, so time gear cannot devalue fast-crit
+      - design/gdd/real-pvp.md   # R3's credit cap sanity-checked against it (250 ms = 8.3% of 3000 ms); crit rule unchanged in PvP
+    value: 3.0
+    unit: seconds (3000 ms)
+    notes: "SHARED cross-system threshold, consumed TWICE by battle-system: its
+      guaranteed-crit rule AND the Wordsmith passive trigger. Strict comparison
+      elapsed_ms < 3000 (exactly 3000 is NOT fast). Ownership is PROVISIONALLY
+      hero-class's — when the battle-system GDD lands it must reference, not
+      redefine this entry; single change point via the registry. Safe band
+      2.5-3.5 s."
+    added: 2026-11-08
+    revised: ""
+
+  - name: ghost_accuracy_friend
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+    value: 0.65
+    unit: probability (ghost correct-answer rate per round)
+    notes: "Friend-duel accuracy tier, F1 input (mode default; a GhostProfile
+      override takes precedence). Safe band 0.40-0.90 inclusive (locked
+      2026-11-09); keep adjacent tiers >= 0.05 apart. The difficulty ladder is
+      deliberately non-monotonic by game layer: stage 0.55 < friend 0.65 <
+      ranked 0.70 < boss 0.75 — do not flatten without a design decision.
+      Consumed by battle-system resolve_round — add referenced_by when its GDD
+      exists."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_accuracy_ranked
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/ranked-league.md
+    value: 0.70
+    unit: probability (ghost correct-answer rate per round)
+    notes: "Ranked-duel accuracy tier, F1 input (mode default; profile override
+      takes precedence). Also ranked-league match-banner material. Same safe
+      band and ladder rules as ghost_accuracy_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_accuracy_tower_stage
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/tower.md
+    value: 0.55
+    unit: probability (ghost correct-answer rate per round)
+    notes: "Tower non-boss stage accuracy tier, F1 input (mode default; profile
+      override takes precedence). Deliberately the easiest tier — tower is the
+      progression ramp. Same safe band and ladder rules as ghost_accuracy_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_accuracy_tower_boss
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/tower.md
+    value: 0.75
+    unit: probability (ghost correct-answer rate per round)
+    notes: "Tower boss-floor accuracy tier, F1 input (mode default; profile
+      override takes precedence). Deliberately the hardest tier — boss is the
+      checkpoint spike (sweeps 4/4 in ~31.6% of fights, see F3). Same safe band
+      and ladder rules as ghost_accuracy_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_hp_friend
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+    value: 500
+    unit: points
+    notes: "Friend-duel ghost HP baseline. Applied by battle-system — opponent-ai
+      emits it in the profile, never applies it. Safe band +/-30% per balance
+      pass; boss always >= ranked; tower stage always <= friend/ranked.
+      Authored intent (game-concept); supersedes the prototype's flat 500 across
+      all modes (decision 2026-11-09). Add battle-system referenced_by when its
+      GDD exists."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_hp_ranked
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/ranked-league.md
+    value: 500
+    unit: points
+    notes: "Ranked-duel ghost HP baseline. Same application and band rules as
+      ghost_hp_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_hp_tower_stage
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/tower.md
+    value: 420
+    unit: points
+    notes: "Tower non-boss stage ghost HP baseline. Same application and band
+      rules as ghost_hp_friend; also tower stage authoring material."
+    added: 2026-11-09
+    revised: ""
+  - name: ghost_hp_boss
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/tower.md
+    value: 600
+    unit: points
+    notes: "Tower boss ghost HP baseline — the highest. Same application and band
+      rules as ghost_hp_friend; also tower boss authoring material."
+    added: 2026-11-09
+    revised: ""
+  - name: answer_reveal_delay_ms_friend
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+    value: 1000
+    unit: ms
+    notes: "Fixed friend-duel ghost answer-reveal pacing hint — pure data, no
+      RNG; battle-system owns reveal scheduling and theater. Authored
+      2026-11-09 (systems-designer proposal, owner-confirmed; nothing authored
+      anywhere before). Safe band 600-2000 ms."
+    added: 2026-11-09
+    revised: ""
+  - name: answer_reveal_delay_ms_ranked
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/ranked-league.md
+    value: 800
+    unit: ms
+    notes: "Fixed ranked-duel reveal delay — fastest tier (competitive density).
+      Same rules as answer_reveal_delay_ms_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: answer_reveal_delay_ms_tower_stage
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/tower.md
+    value: 1200
+    unit: ms
+    notes: "Fixed tower stage reveal delay. Same rules as
+      answer_reveal_delay_ms_friend."
+    added: 2026-11-09
+    revised: ""
+  - name: answer_reveal_delay_ms_tower_boss
+    status: active
+    source: design/gdd/opponent-ai.md
+    referenced_by:
+      - design/gdd/opponent-ai.md
+      - design/gdd/battle-system.md
+      - design/gdd/tower.md
+    value: 1500
+    unit: ms
+    notes: "Fixed tower boss reveal delay — longest tier (gravitas). Same rules
+      as answer_reveal_delay_ms_friend."
+    added: 2026-11-09
+    revised: ""
 
 # Example:
-#
+  - name: battles_per_typical_session
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+    value: 4
+    unit: complete battles per typical session
+    notes: "B11 — battle-system's owned definition (median estimate, 10-20 min
+      session at 2-4 min/battle). Consumed by question-content F5's burnout
+      guard: floor(N_pool / k) >= 2 x 4. At defaults floor(8/1) = 8 >= 8 —
+      satisfied exactly at the boundary, zero slack. Estimate, not retention
+      data — re-estimate from first playtest telemetry (battle-system
+      OQ-BS6); if sessions run longer, raise N_battle inside its 8-16 band."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ultimate_mana_gate
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/ui-shell.md
+    value: 90
+    unit: mana points (inclusive >=)
+    notes: "Ultimate-round unlock threshold — resolves the systems-index
+      arithmetic gap (3 x +30 = 90 < the old 100 gate). 3/3 correct prior
+      rounds fire the ult exactly; any miss (70) falls back to a
+      vocab_strike round. ui-shell renders the gate marker on the mana bar
+      (battle AC BS37). Mana cap stays 100."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ghost_base_damage
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/speech-io.md   # quality-floor lever must reference the 150, never retune it (speech-io Rule 9)
+      - design/gdd/equipment.md   # hp threat check consumes 3×100 + 150 = 450 raw; loss direction preserved with gear (OQ-EQ6 watch)
+    value: 100
+    unit: "points per standard round (ultimate round: 150)"
+    notes: "Fixed, deterministic ghost damage (battle B9) — 100 standard
+      rounds, 150 ultimate_burst round, applied through mitigation
+      x(1 - min(0.25, max(0, def_eff)/600)) then shield-first absorption;
+      floor 75/113, never zero. Supersedes the prototype's 80 + random(45)
+      spread (incidental, not authored; no ghost-stream draws permitted).
+      speech-io's quality-floor lever (OQ-BS5) must reference the 150,
+      never retune it."
+    added: 2026-11-09
+    revised: ""
+
+  - name: base_round_time_s
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/speech-io.md   # listed as referenced-never-redefined (battle owns the round clock)
+      - design/gdd/equipment.md   # effective time feeds round_time_s; grammar-round worst case 14.75 s (equipment EC13)
+      - design/gdd/real-pvp.md   # PvP windows W = max(round_time_A, round_time_B) from each player's own B1 — R4
+    value: 10
+    unit: seconds
+    notes: "Base countdown per round (battle B1): round_time_s = max(5,
+      base_round_time_s + hero_effective_time). The 5 s floor is load-bearing
+      (guarantees the speed multiplier never divides by zero) and adopts
+      hero-class's Edge Case recommendation. Class totals: Wordsmith 10.0,
+      Arcane 10.5, Grammarian 11.0. Not the forge/tower timers."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_fresh_delay
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+    value: 10
+    unit: "minutes (canonical storage: ms)"
+    notes: "Box 1 — Fresh delay after drop, wrong answer or re-drop reset
+      (forge_rune_ladder). Short by design: lets the same sitting run the
+      first review. Safe band 5-60 min; below 5 min the first review stops
+      being a real wait. QA profile override = OQ-FS1."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_settle_delay
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+    value: 24
+    unit: "hours (canonical storage: ms)"
+    notes: "Box 2 — Settling delay after a Box 1 pass (forge_rune_ladder).
+      The daily-rhythm anchor: with once-daily play a rune is due at roughly
+      the next sitting. Safe band 12-48 h; below ~20 h weakens the come-back-
+      tomorrow hook."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_master_delay
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+    value: 72
+    unit: "hours (canonical storage: ms)"
+    notes: "Box 3 — Purifiable delay after a Box 2 pass (forge_rune_ladder).
+      Largest single contributor to time-to-first-stone (forge_time_to_
+      first_stone: T_floor = D1+D2+D3 ~ 4.0 days at defaults). Safe band
+      24-120 h; MVP QA needs the build override regardless (OQ-FS1)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_session_size
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+      - design/gdd/ui-shell.md
+    value: 3
+    unit: cards per forge session
+    notes: "Fixed session length (forge-srs Rule 4): rune cards fill
+      oldest-due-first, forge_filler pads the remainder. Also the stone
+      denominator — a purification sitting needs 3/3 correct rune cards.
+      Safe band 3-5; changing it changes the purification recipe (3 runes
+      per stone is a game-concept lock). Future referenced_by: ui-shell
+      (forge screen layout)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: forge_direction_mix
+    status: active
+    source: design/gdd/forge-srs.md
+    referenced_by:
+      - design/gdd/forge-srs.md
+    value: "2:1"
+    unit: "EN->VI : VI->EN slots per session (slot-assigned: slots 1-2 EN->VI, slot 3 VI->EN)"
+    notes: "forge-srs Rule 4 / game-concept lock. Applied to filler cards
+      too — the mix belongs to the SLOT, not the card (F2). question-content
+      builds each forge_recall payload with the slot's direction; distractors
+      >= 3 per its schema. Short sessions (filler exhausted) are EN->VI-heavy
+      by construction — accepted at MVP (qa-lead finding 8)."
+    added: 2026-11-09
+    revised: ""
+
+
+  - name: tower_floor_count
+    status: active
+    source: design/gdd/tower.md
+    referenced_by:
+      - design/gdd/tower.md
+      - design/gdd/meta-progression.md
+      - design/gdd/ui-shell.md
+    value: 4
+    unit: floors
+    notes: "Tower floors, one per content module in fixed content order (tower
+      Core Rule 1). Coupled to validated module count: raise only when a new
+      build-gate-validated module ships (F1 unlock chain and F2 unaffected
+      structurally; MVP exposes floor 1 only). Consumed by ui-shell (floor
+      map) and accounts-backend (flag schema). meta-progression references it
+      in the tower-quest re-key rationale: a floor-keyed daily quest is
+      permanently uncompletable once all 4 first-clears fire (Core Rules 7-8,
+      E14)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: tower_stages_per_floor
+    status: active
+    source: design/gdd/tower.md
+    referenced_by:
+      - design/gdd/tower.md
+      - design/gdd/ui-shell.md
+    value: 3
+    unit: stages per floor
+    notes: "Stage battles before each floor's boss (tower Core Rule 1).
+      Safe band 2-5. Feeds F2's denominator (battles_per_floor =
+      tower_stages_per_floor + 1, derived, never stored) and F1's
+      boss_unlocked conjunction — change once, all math follows. Consumed by
+      ui-shell, accounts-backend, qa (TW1)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quality_success_threshold
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/ui-shell.md
+    value: 0.6
+    unit: "quality (inclusive >=, presentation only)"
+    notes: "P1 cast/fizzle gate for the ult — NEVER gates damage (battle
+      consumes raw quality regardless). Sim band floor 0.88 sits above it,
+      so the fizzle is spell-miss-only content at MVP. The one future knob:
+      tunable (plausible 0.4-0.8) when a real scoring engine lands. Future
+      referenced_by candidate: ui-shell (renders the cast/fizzle flag from
+      P1) — add when its GDD exists."
+    added: 2026-11-09
+    revised: ""
+
+  - name: sim_quality_band_low
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/battle-system.md   # bounds what B5 can receive from the mic path at MVP (min ult damage 181 at Wordsmith base)
+    value: 0.88
+    unit: quality
+    notes: "Simulated mic quality band floor (concept-locked 88%). Keeps
+      every mic cast above quality_success_threshold (0.6). Closed
+      endpoint: raw < 0.885 rounds to it at 2 decimals."
+    added: 2026-11-09
+    revised: ""
+
+  - name: sim_quality_band_high
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/battle-system.md   # bounds B5's mic-path input; spelling exactly (1.0) always out-damages the sim
+    value: 0.98
+    unit: quality
+    notes: "Simulated mic quality band ceiling (concept-locked 98%).
+      Closed endpoint only via rounding: platform_rng() < 1 so raw >= 0.975
+      rounds up to 0.98. Strictly below the spell path's 1.0."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quality_precision_decimals
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/battle-system.md   # commit log stores and battle consumes the recorded value (S3, SI25)
+    value: 2
+    unit: "decimal places (round-half-up)"
+    notes: "Quality recording precision before the battle commit log.
+      Normative: battle consumes the recorded value, never the scorer's
+      raw float — live and replay damage identical by construction. Each
+      0.01 quality step moves B5 damage by >= 1.75 at any atk."
+    added: 2026-11-09
+    revised: ""
+
+  - name: sim_listening_beat_ms
+    status: active
+    source: design/gdd/speech-io.md
+    referenced_by:
+      - design/gdd/speech-io.md
+      - design/gdd/ui-shell.md
+    value: 1200
+    unit: ms
+    notes: "Simulated mic capture beat in the ult interaction. Deliberately
+      matches the tower-stage ghost's reveal delay (1200 ms —
+      answer_reveal_delay_ms_tower_stage; the longest tier is the tower
+      boss's 1500 ms, not matched) so it reads as an established rhythm;
+      mic total ~2.2-3.2 s inside battle's
+      11000 ms ult window (>= ~7.8 s headroom). Safe band 600-2000 ms.
+      The beat always completes, even past 11000 ms (slowness never
+      truncates it — SI24, pending OQ-SI1's ult-expiry pin). Future
+      referenced_by candidate: ui-shell (renders the capture-beat pulse)
+      — add when its GDD exists."
+    added: 2026-11-09
+    revised: ""
+
+  - name: xp_per_level
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+      - design/gdd/ui-shell.md
+    value: 1000
+    unit: XP per hero level
+    notes: "Flat curve, MVP-final (meta Core Rule 4 / MP1). Level gates
+      nothing at MVP (tower unlocks are boss-clear-only). Scaling curve is a
+      post-MVP knob — and an Alpha risk: if anything gates on level, the flat
+      curve converts grinder/casual playtime differences into power
+      differences (OQ-MP1 context). Consumed by ui-shell (level + XP bar:
+      cumulative_xp mod 1000)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: reward_gold_victory
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 120
+    unit: gold
+    notes: "Stage/friend/ranked victory reward. FINAL VALUE OWNED HERE
+      (meta Core Rule 3) — battle-system Rule 21 emits it and keeps a MIRRORED
+      table, not the authority (its provisional flag resolved 2026-11-09;
+      battle OQ-BS3 to mark resolved-pointing-here at its next edit).
+      Adopted unchanged from the validated prototype."
+    added: 2026-11-09
+    revised: ""
+
+  - name: reward_gold_victory_boss
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 250
+    unit: gold
+    notes: "Tower-boss victory reward (the only 250g encounter — floor-1
+      boss at MVP). Owner/authority split as reward_gold_victory. The Alpha
+      faucet-cap question (OQ-MP1) exists because unlimited boss replays at
+      this value are a ~4000 g/h ceiling no flat sink price survives."
+    added: 2026-11-09
+    revised: ""
+
+  - name: reward_gold_defeat
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 40
+    unit: gold
+    notes: "Defeat reward, any encounter. Owner split as reward_gold_victory.
+      Losing is progress at MVP by design (streak counts any outcome)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: reward_xp_victory
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 180
+    unit: XP
+    notes: "Victory XP, identical for stage and boss encounters. Owner split
+      as reward_gold_victory."
+    added: 2026-11-09
+    revised: ""
+
+  - name: reward_xp_defeat
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 60
+    unit: XP
+    notes: "Defeat XP, any encounter. Owner split as reward_gold_victory."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_reward_win2
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 150
+    unit: gold
+    notes: "Claim reward, daily quest 'Thắng 2 trận' (Win 2 battles — label
+      deliberately NOT the prototype's 'PvP' wording, Pillar 4). Max daily
+      quest income across all four = 450 gold."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_reward_forge5
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 120
+    unit: gold
+    notes: "Claim reward, daily quest 'Rèn 5 từ bị lỗi trong Lò Rèn'
+      (forge 5 missed words). Goal quest_goal_forge5 is inverse-skill for
+      strong learners — accepted at MVP, OQ-MP2 for Alpha."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_reward_combo3
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 80
+    unit: gold
+    notes: "Claim reward, daily quest 'Đạt COMBO ×3 trong một trận'.
+      Threshold source, NOT additive (meta MP3): one battle reaching ×7
+      writes progress exactly once."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_reward_tower_win
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 100
+    unit: gold
+    notes: "Claim reward, daily quest 'Thắng 1 trận Tháp'. Re-keyed at
+      authoring (2026-11-09) from a floor_cleared event — first-clear-only
+      would strand the quest after all floors clear — to a committed victory
+      with encounter ∈ {tower_stage, tower_boss}. floor_cleared is
+      deliberately unconsumed by meta (E14, OQ-MP5; tower TW20 re-verify at
+      its next edit)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_goal_win2
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 2
+    unit: committed victories per day
+    notes: "Achievable ~69-92% of single sessions at p(win) 0.5-0.7 — an
+      honest, incomplete-some-days goal (Pillar 4), not a bug."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_goal_forge5
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 5
+    unit: correct rune cards per day
+    notes: "Inverse-skill: strong learners (90%+ accuracy) drop < 5 runes/day
+      and fail ~40-60% of days (economy-designer finding). Accepted at MVP;
+      adaptive goal is OQ-MP2 (Alpha)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: combo3_threshold
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 3
+    unit: max combo in one battle
+    notes: "COMBO quest trigger: per-battle max combo >= 3 (any outcome
+      counts — a lost battle still pays). Battle resets combo only on
+      wrong/timeout (its Rule 14), so correct-but-slow keeps it."
+    added: 2026-11-09
+    revised: ""
+
+  - name: quest_goal_tower_win
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+    value: 1
+    unit: tower-encounter victory per day
+    notes: "Source: committed victory with encounter tower_stage|tower_boss
+      (battle Core Rule 2). Complements quest_reward_tower_win's re-key
+      note."
+    added: 2026-11-09
+    revised: ""
+
+  - name: daily_reset_tz
+    status: active
+    source: design/gdd/meta-progression.md
+    referenced_by:
+      - design/gdd/meta-progression.md
+      - design/gdd/analytics.md   # daily metrics group on this boundary (game_day_id), never UTC/device-local
+    value: Asia/Ho_Chi_Minh
+    unit: timezone (non-numeric)
+    notes: "Fixed daily boundary for quest reset + streak day attribution —
+      Vietnam has no DST, so the boundary never shifts. Server clock governs
+      (client clocks decide nothing), mirroring forge-srs's server-time
+      eligibility. Streak/quests key on COMMIT day, not play day (E15)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: equipment_level_cap
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 5
+    unit: levels per item
+    notes: "Max upgrade level per item (F2: level' = min(5, level+1), one
+      upgrade_stone per step). The def <= 120 band is enforced BY
+      CONSTRUCTION through this cap + catalog values (worst case exactly
+      120), not a runtime clamp — raising the cap breaks the band (OQ-EQ4:
+      cap and band are one decision, needs battle-side re-verification)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: equipment_def_band
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+      - design/gdd/battle-system.md   # battle's B6 note recommended <= 120 (OQ-BS4 band item closes here)
+    value: 120
+    unit: def points (effective, max)
+    notes: "Effective DEF ceiling at MVP. Battle B7 (counter) is uncapped in
+      def while B9 mitigation is capped, so unbounded def turns counters
+      into KOs. F3 asserts effective def <= 120 fail-fast (a data bug, not
+      a player state). Worst case by construction: Grammarian 55 + staff 18
+      + plate 37 + owl 10 = exactly 120."
+    added: 2026-11-09
+    revised: ""
+
+  - name: equipment_crit_ceiling
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 100
+    unit: percent
+    notes: "F3 assert: effective crit <= 100 — battle B10 reads crit_stat/100
+      as a probability; p > 1 breaks probability semantics and stream
+      discipline. Catalog headroom is large (max 48 at Wordsmith maxed).
+      Fail-fast on violation."
+    added: 2026-11-09
+    revised: ""
+
+  - name: equipment_time_advisory_ceiling
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 3.0
+    unit: seconds (equipment contribution only, not the class time_bonus)
+    notes: "ADVISORY, not an assert: equipment's contribution to effective
+      time <= 3.0 s. Catalog max is cloak 0.5 + charm 1.75 (at +5) = 2.25 —
+      holds with margin. Keeps the grammar-round clock at 14.75 s worst
+      case (10 base + 1.0 Grammarian class + 2.25 gear + 1.5 hourglass).
+      A violation is a tuning-review flag, not a fail-fast."
+    added: 2026-11-09
+    revised: ""
+
+  - name: eq_pre_damage_mult_phrasal
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 1.25
+    unit: multiplier
+    notes: "Kiếm Phrasal Verb (sword-phrasal) Class-A hook: ×1.25 on a
+      vocab_strike round whose word is phrasal-verb tagged (part_of_speech).
+      Battle plugs it into B3 as pre_damage_mult; the product rounds ONCE at
+      the end (battle's rounding rule). EQ19 asserts the value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: eq_pre_damage_mult_collocation
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 1.20
+    unit: multiplier
+    notes: "Cung Collocation (bow-collocation) Class-A hook: ×1.20 on
+      listening_pierce rounds. Battle plugs it into B4; product rounds once
+      at the end. EQ19 asserts the value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: eq_flat_counter_bonus_perfect
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 30
+    unit: counter damage points
+    notes: "Trượng Thì Hoàn Thành (staff-perfect) Class-A hook: +30 counter
+      damage on a grammar_shield round answered correctly. Joins AFTER B7's
+      rounding (no rounding interaction). EQ19 asserts the value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: eq_pre_shield_mult_conditional
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 1.25
+    unit: multiplier
+    notes: "Giáp Câu Điều Kiện (plate-conditional) Class-A hook: ×1.25 on
+      every grammar_shield round — applies to the B6 float
+      (80 + def × 0.3) × 1.25, rounded once. At def 120: shield 145 (pool
+      bound with the Grammarian proc becomes 205 — battle's printed 157 goes
+      stale, OQ-EQ6). EQ19 asserts the value."
+    added: 2026-11-09
+    revised: ""
+
+  - name: eq_round_time_bonus_grammar
+    status: active
+    source: design/gdd/equipment.md
+    referenced_by:
+      - design/gdd/equipment.md
+    value: 1.5
+    unit: seconds
+    notes: "Đồng Hồ Cát Học Giả (hourglass-scholar): +1.5 s to round_time_s
+      on grammar rounds. Joins AFTER the max(5, ...) floor — no bound above
+      the floor exists (equipment EC: any positive bonus accepted; worst
+      case 14.75 s). Needs a new battle B1 hook (OQ-EQ1 — Class-B)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_tier_floors
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+    value: "0/1000/1300/1600/1900"
+    unit: "RP floor per tier (Bronze/Silver/Gold/Diamond/Grandmaster)"
+    notes: "RL1 input. Prototype-validated palette (game-concept Long-Term
+      Progression), adopted Alpha-final; consumed by ranked_tier_division and
+      rendered by ui-shell (tier track, badges). Retune trigger lives in
+      OQ-RL1: playtest median time-to-Silver > ~2 weeks of daily play
+      (~14 sessions) -> drop the Silver floor to 600-700 (one-line data-file
+      change; RL1 is floor-parametric). Primary lever if grind feels
+      ghost-driven is ghost_accuracy_ranked, not these floors."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_peer_roster_size
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+    value: 14
+    unit: simulated peers per league group (board renders 15 rows with the player)
+    notes: "RL3 input, prototype display carried forward ('Nhom #14' pattern).
+      Never playtested for retention - OQ-RL6 asks whether the roster
+      produces the check-in habit or reads as static noise (post-Alpha
+      playtest). ui-shell consumes the 15-row shape; zone dividers: promo
+      top 5, demote bottom 3 (presentation mirrors - they grant and remove
+      nothing at Alpha, OQ-RL2)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: ranked_forfeit_grace_min
+    status: active
+    source: design/gdd/ranked-league.md
+    referenced_by:
+      - design/gdd/ranked-league.md
+    value: 15
+    unit: minutes
+    notes: "PROVISIONAL (OQ-RL4 / server-trust ADR) - ranked battle abandoned
+      after this window from server-observed battle-start records a forfeit:
+      RP -14, no rewards, no runes (rage-quit protection once RP has stakes;
+      friend/tower abandons keep battle-system's silent discard). Measured
+      from battle-start signal to committed result or last client event.
+      Safe band 10-30 min. Consumed by accounts-backend forfeit detection;
+      mechanism (telemetry, late-commit rejection) is the technical-director's
+      ADR, owed before Alpha ships."
+    added: 2026-11-09
+    revised: ""
+
+  - name: rp_delta_win_ranked
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/ranked-league.md
+      - design/gdd/ui-shell.md
+      - design/gdd/real-pvp.md   # PvP verdict pays the same deltas (+28/-14/0 draw) — R8
+    value: 28
+    unit: RP per ranked victory
+    notes: "Battle Rule 21 emission values, adopted Alpha-final by
+      ranked-league Core Rule 1 (the RP half of OQ-BS3 resolves pointing at
+      ranked-league; battle's next edit may mark it). Ranked encounters only
+      - friend/tower RP events are 0 and never reach the ladder. Emission is
+      battle's; ladder application is ranked-league's (RL2: rp' =
+      max(rp + delta, 0)). ui-shell displays the delta with damage-number
+      legibility (result modal + climb tick)."
+    added: 2026-11-09
+    revised: ""
+
+  - name: rp_delta_loss_ranked
+    status: active
+    source: design/gdd/battle-system.md
+    referenced_by:
+      - design/gdd/battle-system.md
+      - design/gdd/ranked-league.md
+      - design/gdd/real-pvp.md   # PvP forfeit and defeat pay -14 identically — R5/R8
+    value: -14
+    unit: RP per ranked defeat (and per forfeit)
+    notes: "Twin of rp_delta_win_ranked. Applies to played defeats AND
+      grace-window forfeits identically (Core Rule 11); floors at 0 with no
+      debt state (RL2). 2:1 win/loss ratio makes 4-battle sessions
+      net-positive at 2W2L (+28) - the session-morale math behind OQ-RL1's
+      climb analysis."
+    added: 2026-11-09
+    revised: ""
+
+  - name: telemetry_retention_raw_days
+    status: active
+    source: design/gdd/analytics.md
+    referenced_by:
+      - design/gdd/analytics.md
+    value: 90
+    unit: days
+    notes: "Raw telemetry events are aggregated to rollups and purged at 90
+      days (analytics Edge Case deletion row; TTL_raw). Whichever boundary
+      comes first vs the deletion SLA below. Accounts-backend's deletion job
+      consumes this value at its next edit (its GDD currently names analytics
+      as 'Event sink - Post-MVP design' only). Quarantined samples inherit
+      the same window."
+    added: 2026-11-09
+    revised: ""
+
+  - name: telemetry_deletion_sla_days
+    status: active
+    source: design/gdd/analytics.md
+    referenced_by:
+      - design/gdd/analytics.md
+    value: 30
+    unit: days
+    notes: "Account deletion (owned by accounts-backend) cascades to ALL
+      telemetry - raw events, account-keyed rollups, quarantined samples -
+      within 30 days, purge or irreversible anonymization; consent audit
+      reduces to an anonymous 'deleted, consent revoked' marker (analytics
+      Edge Case deletion row; AC-AN20)."
+    added: 2026-11-09
+    revised: ""
+
+
 # constants:
 #   - name: gold_carry_limit
 #     status: active
