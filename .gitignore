@@ -13,13 +13,16 @@ Desktop.ini
 .claude/settings.local.json
 CLAUDE.local.md
 project.local.yaml
-production/session-logs/
+# Both use `**/`: a middle `/` anchors a pattern to the repo root, which
+# silently missed nested copies (design/gdd/production/session-logs/).
+**/production/session-logs/
 # Ephemeral per-session checkpoint. directory-structure.md documents this as
 # gitignored; the rule was missing, so active.md would have been committed.
-production/session-state/
+**/production/session-state/
 .scratch/
-# Per-agent working memory written at runtime — not release material
-.claude/agent-memory/
+# Per-agent working memory written at runtime — not release material.
+# `**/` so nested checkouts (e.g. a session running inside design/gdd) match too.
+**/.claude/agent-memory/
 # Worktrees from the prototyper, isolated subagents and `claude --worktree`.
 # Each is a separate checkout; staging everything would add it as an embedded
 # repository.
@@ -32,6 +35,11 @@ sandbox/
 sandboxes/
 tests/sandboxes/
 qa-sandbox/
+# External reference prototype — its own git repo
+# (github.com/vinh19410/lexi-quest-design), kept as a local checkout.
+# Never staged: an embedded repository would corrupt the index, and its
+# history belongs to the origin remote, not this one.
+raw-data/
 
 # === Runtime Artifacts (auto-generated, start empty on fresh clone) ===
 # Created on first use by /consistency-check and /architecture-review
