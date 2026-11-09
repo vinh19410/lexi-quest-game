@@ -10,10 +10,16 @@
 
 ## Engine & Language
 
-- **Engine**: [TO BE CONFIGURED — run /setup-engine]
-- **Language**: [TO BE CONFIGURED]
-- **Rendering**: [TO BE CONFIGURED]
-- **Physics**: [TO BE CONFIGURED]
+<!-- Hand-filled 2026-11-09: this project's stack is out of /setup-engine's
+     catalog (Godot|Unity|Unreal), so the engine: block in project.yaml and
+     this section were written by hand instead. project.yaml is authoritative;
+     the **Engine**: line below is also what workflow-catalog's engine-setup
+     step matches (its any_of branch). -->
+
+- **Engine**: Web (browser SPA) — React 19 + Vite 8 (out-of-catalog; project.yaml `engine:` block is authoritative)
+- **Language**: TypeScript ^5.7.0
+- **Rendering**: React DOM 19; Tailwind CSS 4 for styling
+- **Physics**: None (DOM/CSS transitions; no physics engine)
 
 ## Input & Platform
 

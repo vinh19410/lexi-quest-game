@@ -10,6 +10,18 @@ framework:
 project:
   stage: Systems Design
 
+# Engine: out-of-catalog web stack. The engine.name enum (yaml-helper.sh) and
+# workflow-catalog's engine-setup step only know Godot|Unity|Unreal, so this
+# block is hand-written — /setup-engine cannot express it. Display readers
+# (engine, engine_values) accept any string; resolve_code_root maps only the
+# three catalog names, so code-root resolution stays "unset" (announced
+# honestly by its callers) until a code root exists. Reference:
+# docs/engine-reference/web/VERSION.md
+engine:
+  name: Web
+  version: "React 19"
+  language: TypeScript
+
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
 #
