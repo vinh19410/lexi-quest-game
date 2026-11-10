@@ -10,17 +10,19 @@ framework:
 project:
   stage: Systems Design
 
-# Engine: out-of-catalog web stack. The engine.name enum (yaml-helper.sh) and
-# workflow-catalog's engine-setup step only know Godot|Unity|Unreal, so this
-# block is hand-written — /setup-engine cannot express it. Display readers
-# (engine, engine_values) accept any string; resolve_code_root maps only the
-# three catalog names, so code-root resolution stays "unset" (announced
-# honestly by its callers) until a code root exists. Reference:
-# docs/engine-reference/web/VERSION.md
+# Engine: Web. Registered by hand 2026-11-09 (commit 692771c) while the stack
+# was outside /setup-engine's catalog; configured via /setup-engine web
+# 2026-11-10, which now supports Web natively (engines.tsv row, starters).
+# engine.version is the bundler's pin (W3 convention); React/TS pins live in
+# docs/engine-reference/web/VERSION.md. No package.json at the root yet — the
+# app is scaffolded into src/ (ADR-0004) at scaffold-story time, so commands.*
+# stay [TO BE CONFIGURED] and test/smoke gates read NOT ASSESSED until then.
 engine:
   name: Web
-  version: "React 19"
+  version: "Vite ^8.0.5"
   language: TypeScript
+  rendering: "React DOM 19 + Tailwind CSS 4 (DOM, no canvas)"
+  physics: "none"
 
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
@@ -44,3 +46,29 @@ engine:
 modes:
   rigor: standard
   automation: autonomous
+
+# Web has no engine specialist agent (references/web.md W7): everything routes
+# to lead-programmer against docs/engine-reference/web/.
+specialists:
+  code: lead-programmer
+  shader: lead-programmer
+  ui: lead-programmer
+  additional: []
+
+# Web/TypeScript defaults from /setup-engine (references/web.md W3).
+naming:
+  classes: PascalCase
+  variables: camelCase
+  constants: SCREAMING_SNAKE
+  signals: on_event_name
+  files: kebab-case
+  scenes: snake_case   # nominal — React SPA has no scenes; components live in kebab-case files
+
+# TODO: app not scaffolded yet (src/ empty per ADR-0004) — set the real pnpm
+# scripts here via /project-settings when the scaffold story runs. Until then
+# /smoke-check and test gates report NOT ASSESSED (no test script).
+commands:
+  build: "[TO BE CONFIGURED]"
+  test: "[TO BE CONFIGURED]"
+  run: "[TO BE CONFIGURED]"
+  smoke: "[TO BE CONFIGURED]"
