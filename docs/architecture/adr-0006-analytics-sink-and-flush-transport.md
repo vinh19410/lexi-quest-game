@@ -1,7 +1,7 @@
 # ADR-0006: Analytics Sink and Flush Transport
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-10
