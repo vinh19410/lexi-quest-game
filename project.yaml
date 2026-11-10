@@ -14,9 +14,9 @@ project:
 # was outside /setup-engine's catalog; configured via /setup-engine web
 # 2026-11-10, which now supports Web natively (engines.tsv row, starters).
 # engine.version is the bundler's pin (W3 convention); React/TS pins live in
-# docs/engine-reference/web/VERSION.md. No package.json at the root yet — the
-# app is scaffolded into src/ (ADR-0004) at scaffold-story time, so commands.*
-# stay [TO BE CONFIGURED] and test/smoke gates read NOT ASSESSED until then.
+# docs/engine-reference/web/VERSION.md. Scaffolded 2026-11-10 per ADR-0004:
+# root package.json + pnpm-lock.yaml pin the stack (vitest 5.1.0 resolved
+# against the pnpm registry for its Vite-8 peer range).
 engine:
   name: Web
   version: "Vite ^8.0.5"
@@ -64,11 +64,23 @@ naming:
   files: kebab-case
   scenes: snake_case   # nominal — React SPA has no scenes; components live in kebab-case files
 
-# TODO: app not scaffolded yet (src/ empty per ADR-0004) — set the real pnpm
-# scripts here via /project-settings when the scaffold story runs. Until then
-# /smoke-check and test gates report NOT ASSESSED (no test script).
+# Real pnpm scripts from the 2026-11-10 scaffold. `smoke` stays unset until a
+# build-health script exists — /smoke-check falls back to `build` when it is
+# unset, which is correct for now.
 commands:
-  build: "[TO BE CONFIGURED]"
-  test: "[TO BE CONFIGURED]"
-  run: "[TO BE CONFIGURED]"
+  build: pnpm build
+  test: pnpm test
+  run: pnpm dev
   smoke: "[TO BE CONFIGURED]"
+
+# Performance budgets, set at scaffold time (2026-11-10) — gate-check compares
+# these against /perf-profile data (performance.enforce: warn). Values are
+# starting positions for a pure-DOM web game; retune from measurements, not
+# from vibes.
+performance:
+  target_framerate: 60        # animations/transitions ride the compositor
+  frame_budget_ms: 16.67      # per-frame JS work during battle animations
+  draw_call_limit: 200        # DOM-node churn proxy — no GPU draw calls in the DOM MVP
+  memory_ceiling_mb: 300      # browser tab heap ceiling across long sessions
+  bundle_budget_kb: 500       # gzipped initial JS bundle (React + app shell)
+  tti_budget_ms: 3000         # time-to-interactive on a mid-range phone

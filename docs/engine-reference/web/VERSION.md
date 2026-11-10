@@ -29,12 +29,19 @@ Do not fill the gap from training data — write
 - **Code root — DECIDED**: ADR-0004 **Accepted** 2026-11-10
   (`docs/architecture/adr-0004-module-layout-and-b-series-extraction.md`):
   `src/` (Vite app at the repo root).
-- **Test framework — DECIDED (`/test-setup`, 2026-11-09): vitest.** Exact
-  version pinned at app-scaffold time and must pair with Vite ^8.0.5 —
-  NOT SOURCEABLE: vitest's Vite-8 peer range is not covered by any path in
-  this repo; resolve against the pnpm registry when the scaffold story runs.
+- **Test framework — DECIDED (`/test-setup`, 2026-11-09): vitest.**
+  **PINNED at scaffold (2026-11-10): vitest 5.1.0** (exact, in root
+  `package.json`) — resolved against the pnpm registry per this file's
+  instruction: peer range `^6.4.0 || ^7.0.0 || ^8.0.0` covers Vite 8
+  (^8.0.5 → 8.3.7 resolved, lockfile-locked), verified by a passing
+  `pnpm test` + `pnpm build` at scaffold time. Node engines: vite 8 and
+  vitest 5 both require `^20.19.0 || >=22.12.0` (or `^22.12/^24` for
+  vitest) — the repo's `engines` field pins `node >=22.12.0`. The
+  NOT SOURCEABLE note above is resolved as of the scaffold.
   Naming contract: `tests/**/*_test.ts`, which needs an explicit vitest
-  `include` (the default `*.test.ts` glob misses it).
+  `include` (the default `*.test.ts` glob misses it) — set in
+  `vite.config.ts`; verified the default glob does NOT pick a `.test.ts`
+  probe (watched failing 2026-11-10).
 - **Backend / persistence — DECIDED**: ADR-0002 **Accepted** 2026-11-10
   (`docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md`):
   Node LTS + Fastify + PostgreSQL.
