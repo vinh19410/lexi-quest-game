@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     # The scaffold (root package.json + lockfile) landed 2026-11-10, so this
     # job runs unconditionally now. (An earlier job-level
-    # `if: hashFiles('package.json') != ''` guard was removed: startup-failure
-    # diagnosis on runs 42737966412/42744394432/42778550816 — every push
-    # failed in 0s with zero jobs, before and after the scaffold — points at
-    # hashFiles not being permitted in a job-level `if`, so the guard
-    # rejected the whole workflow at parse time. The pre-scaffold guard it
-    # provided is moot with package.json on main.)
+    # `if: hashFiles('package.json') != ''` guard was removed the same day:
+    # its removal was pushed while chasing a 0s/zero-jobs startup-failure
+    # signature that turned out to be GitHub **account billing** — the
+    # check-run annotation said jobs were not started over failed payments /
+    # spending limit. The guard itself was moot with package.json on main,
+    # so its removal stays.)
 
     steps:
       - name: Checkout
