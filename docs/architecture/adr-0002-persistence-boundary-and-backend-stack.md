@@ -1,13 +1,13 @@
 # ADR-0002: Persistence Boundary and Backend Stack
 
 ## Status
-Accepted
+Accepted (amended 2026-11-10 — four schema-defect fixes from `/architecture-review` 2026-11-10, all pre-migration-0001; see Amendment History)
 
 ## Date
 2026-11-09
 
 ## Last Verified
-2026-11-09
+2026-11-10
 
 ## Decision Makers
 Technical-director role via autonomous run (`project.yaml` `modes.automation: autonomous`); lean review — TD-ADR skipped (review_mode: lean). Requirements sourced from Approved GDDs: accounts-backend (primary, all Core Rules/F1–F3), forge-srs OQ-FS1, hero-class OQ4, question-content delivery split.
@@ -25,13 +25,13 @@ The accounts-backend GDD pins *what* persists and *how it behaves* (server-autho
 | **Knowledge Risk** | MEDIUM — the client pins are VERSION.md-verified, but **no backend version pins exist in `docs/engine-reference/web/`** (VERSION.md covers the SPA stack only). Node LTS / Fastify v5 / Postgres 17 are from training data (pre-cutoff families); exact versions are **NOT SOURCEABLE** from repo pins and get pinned at scaffold time against current docs. Mechanisms decided here (opaque tokens, argon2id, SQL transactions, FK cascades) are stable, pre-cutoff platform surface |
 | **References Consulted** | `docs/engine-reference/web/VERSION.md` (no backend coverage — stated, not filled from training data); `design/gdd/accounts-backend.md` (primary); `design/gdd/forge-srs.md` OQ-FS1; `design/gdd/hero-class.md` OQ4 |
 | **Post-Cutoff APIs Used** | Possibly Fastify v5 minor APIs — resolved at scaffold, flagged there |
-| **Verification Required** | (1) argon2id params current against OWASP guidance at implementation (this ADR's numbers are pre-cutoff); (2) commit-ID idempotency + consumable-guard integration tests; (3) sliding-TTL boundary (exactly 30d + 0s → expired) on the server clock; (4) deletion-cascade test proving no orphaned per-account rows |
+| **Verification Required** | (1) argon2id params current against OWASP guidance at implementation (this ADR's numbers are pre-cutoff); (2) commit-ID + seed-anchor idempotency, replay-result, and state-digest monotonicity integration tests; (3) sliding-TTL boundary (exactly 30d + 0s → expired) on the server clock; (4) deletion-cascade test proving no orphaned per-account rows |
 
 ## ADR Dependencies
 
 | Field | Value |
 |-------|-------|
-| **Depends On** | None at decision level (independent of ADR-0001's algorithm choice). Storage-shape consistency: the battle-record table carries the battle seed as two uint32 columns matching ADR-0001's `U64` halves — no BigInt in storage or transport |
+| **Depends On** | None at decision level (independent of ADR-0001's algorithm choice). Storage-shape consistency: the battle seed is stored as two `BIGINT` columns holding ADR-0001's uint32 `U64` halves, CHECK-bound to the unsigned 32-bit range; the halves remain plain JS `number`s — no JS `BigInt` type in storage or transport code (single narrow exception: the server-boundary seed-string codec, §Implementation Guidelines) |
 | **Enables** | ADR-0003 (commit protocol) rides this storage: the commits table and idempotency mechanics decided here are what ③ formalizes on the wire |
 | **Blocks** | accounts-backend implementation stories; every persistence-dependent story in forge-srs, equipment, tower, meta-progression; ranked-league persistence (Alpha). None exist yet (no epics) |
 | **Ordering Note** | ADR-0003 must not contradict the storage semantics recorded here (atomic whole-commit, commit-ID idempotency, stale-state rejection); code root/repo topology/raw-data fate is ADR-0004's surface and is deliberately absent here |
@@ -62,10 +62,10 @@ accounts-backend's GDD names its companion ADR explicitly (Dependencies: "the GD
 **Storage engine: PostgreSQL (single managed instance), accessed provider-agnostically** through a standard connection string — the provider (Supabase/Neon/RDS-class) is a deploy-time choice by cost/region criteria, exactly like the GDD's provider-agnostic identity record for OAuth. Postgres because every storage requirement here is native to it: transactional whole-commit apply (AC-C2), unique-constraint idempotency (AC-E2), conditional-update consumable guards (AC-E3), FK `ON DELETE CASCADE` (analytics-010), JSONB for commit payloads and content banks. No ORM religion at MVP: a thin query layer is enough; the schema is the contract.
 
 **Schema mechanics (the freeze):**
-- `accounts(id, email_normalized UNIQUE, password_hash, created_at, …)` — one account, one profile (Core Rule 2).
+- `accounts(id, email_normalized UNIQUE, password_hash, state_digest BIGINT NOT NULL DEFAULT 0, created_at, …)` — one account, one profile (Core Rule 2). `state_digest` is the per-account monotonic counter ADR-0003 returns on every commit response: incremented only on **applied** commits, by atomic SQL (`SET state_digest = state_digest + 1`) inside the commit transaction — never an app-side read-modify-write; replays return the commit's recorded `result_state_digest` and must never bump the counter.
 - `sessions(token_hash, account_id FK, last_active_at, created_at)` — opaque tokens, hashed at rest; F1 refresh writes `last_active_at` only when > 1 h stale (the GDD's own noted optimization; no player-visible change).
-- `commits(commit_id PK, account_id FK, type, payload JSONB, applied_at)` — client-generated commit ID, unique: a replayed ID answers with the recorded original result without re-applying (AC-E2). Commit *protocol semantics* stay ADR-0003's; the storage contract is fixed here.
-- Per-domain tables (rune queue, gear, loadout, quests, tower progress, records, battle records) all `FK → accounts ON DELETE CASCADE` — the deletion path analytics-010/OQ6 needs exists from day one. Battle records carry the battle seed as `seed_hi INT, seed_lo INT` (ADR-0001's `U64` halves; uint64 does not fit Postgres int8 — do not "simplify" to one column).
+- `commits(commit_id PK, account_id FK, type, payload JSONB, applied_at, seed_hi BIGINT NULL, seed_lo BIGINT NULL, result_state_digest BIGINT NOT NULL)` — client-generated commit ID, unique: a replayed ID answers with the recorded original result without re-applying (AC-E2). `payload` is the commit **input**; `result_state_digest` is the account counter's value immediately after the apply, written in the same transaction — it is what both replay paths answer with (without it the table stores no result and "replay answers the recorded original result" is unimplementable). `seed_hi/seed_lo` carry the battle seed iff the type is seed-anchored (ADR-0003's anchor list: `battle_end`, `tower_stage_result`) — together the two uniqueness constraints of AC-E2 + MP2: `commits_pkey` for commit_id-anchored types, and `CREATE UNIQUE INDEX commits_seed_anchor ON commits(account_id, type, seed_hi, seed_lo) WHERE seed_hi IS NOT NULL` for seed-anchored ones (partial: the WHERE makes intent explicit and independent of the NULLS DISTINCT default; the commits rows *are* the applied-seed record — a separate `applied_seeds` table would duplicate them and add a second insert to the idempotency path). `CHECK ((seed_hi IS NULL) = (seed_lo IS NULL))` backstops the pairing at the DB. A seed-anchor collision with a **divergent payload** is ADR-0003's `replay_mismatch` rejection, not a silent replay. Commit *protocol semantics* stay ADR-0003's; the storage contract is fixed here.
+- Per-domain tables (rune queue, gear, loadout, quests, tower progress, records, battle records) all `FK → accounts ON DELETE CASCADE` — the deletion path analytics-010/OQ6 needs exists from day one. Battle records carry the battle seed as `seed_hi BIGINT, seed_lo BIGINT`, each `CHECK`-bound to `BETWEEN 0 AND 4294967295` (ADR-0001's `U64` halves). Postgres `integer` is **signed** int32 — a uint32 half reaches 4,294,967,295, so `INT` columns would reject ~half of all seeds (defect found by `/architecture-review` 2026-11-10, fixed pre-migration-0001); `BIGINT` is the unsigned-32-safe container and the CHECKs make "uint32 halves" a DB-enforced property, not a comment. The full uint64 still fits no exact single numeric column — do not "simplify" to one column.
 - Consumable guards: conditional `UPDATE … WHERE not_consumed` inside the commit transaction; zero rows affected → stale-state rejection (AC-E3).
 - **Freeze policy: additive, nullable, backward-compatible migrations only.** Post-freeze schema changes must not rewrite or drop existing columns. This is what resolves hero-class OQ4 *mechanically*: post-MVP class switching — whatever project-owner later decides — is an additive migration (e.g., a `class_history` table), so the freeze does not force the product answer now, and no speculative `class_history` column is added at MVP. The product question stays open, owned by project-owner, decoupled from the freeze.
 - Login-throttle counters stay **in memory** (F2, AC-E4 accepts restart clearing); they are deliberately not persisted.
@@ -76,7 +76,7 @@ accounts-backend's GDD names its companion ADR explicitly (Dependencies: "the GD
 
 **Content payload delivery: version-keyed API, client-side cache.** `GET /api/content/version` returns the current content version (cheap, every app load); the client compares to its browser-storage cache (`cached.version === server.version` — the GDD's locked one-line invalidation) and fetches `GET /api/content` only on mismatch. Publishing content = inserting a new content-version row; no deploy. A session never switches content mid-battle (AC-E5 — the client only re-reads at full app load). No CDN at MVP: the client cache is the delivery optimization, and content volume is small.
 
-**Hosting shape (MVP): one stateless service + managed Postgres + transactional email API.** Stateless app servers keep horizontal scaling available; single region; no auto-scaling complexity at MVP. Transport/TLS termination/CDN for the PvP era remain ADR-⑦'s surface. **OQ5 resolved as an interface: a thin `Mailer` port (verify + reset + future mail) with the provider chosen at deployment; selection criteria = Vietnamese-inbox deliverability verified by a seed-list test before public testing.** **OQ-FS1 resolved: QA delay-override profiles are client build config** — forge delays are data-driven constants in the sim core (coding standards), QA builds swap the profile at build time; overrides never alter the persistence schema, never ship in production defaults, and `due_at` remains plain committed server data.
+**Hosting shape (MVP): one stateless service + managed Postgres + transactional email API.** Stateless app servers keep horizontal scaling available; single region; no auto-scaling complexity at MVP. **Cookie co-location constraint: the SPA and the API are served from one registrable domain** (a "site" is the eTLD+1, so e.g. an `app.example.com` SPA calling an `api.example.com` API is same-site and Lax applies) — this is what makes `SameSite=Lax` a complete CSRF posture for the session cookie; a cross-site API split would force `SameSite=None; Secure` plus explicit CSRF tokens, declared out of MVP scope. Transport/TLS termination/CDN for the PvP era remain ADR-⑦'s surface. **OQ5 resolved as an interface: a thin `Mailer` port (verify + reset + future mail) with the provider chosen at deployment; selection criteria = Vietnamese-inbox deliverability verified by a seed-list test before public testing.** **OQ-FS1 resolved: QA delay-override profiles are client build config** — forge delays are data-driven constants in the sim core (coding standards), QA builds swap the profile at build time; overrides never alter the persistence schema, never ship in production defaults, and `due_at` remains plain committed server data.
 
 ### Architecture Diagram
 
@@ -99,9 +99,14 @@ Browser SPA (React)                          Backend (Node LTS + Fastify, statel
 
 ```ts
 // Storage contract (server-internal, the schema is the API):
-// commits(commit_id PK, account_id FK→accounts ON DELETE CASCADE, type, payload JSONB, applied_at)
+// accounts(id, email_normalized UNIQUE, password_hash, state_digest BIGINT NOT NULL DEFAULT 0, created_at, …)
+// commits(commit_id PK, account_id FK→accounts ON DELETE CASCADE, type, payload JSONB, applied_at,
+//         seed_hi BIGINT NULL, seed_lo BIGINT NULL,   -- set iff type is seed-anchored (ADR-0003)
+//         result_state_digest BIGINT NOT NULL)        -- counter value after apply; what replays answer
+//   UNIQUE INDEX commits_seed_anchor(account_id, type, seed_hi, seed_lo) WHERE seed_hi IS NOT NULL
+//   CHECK ((seed_hi IS NULL) = (seed_lo IS NULL))
 // sessions(token_hash PK, account_id FK→accounts ON DELETE CASCADE, last_active_at, created_at)
-// battle_records(..., seed_hi INT /* uint32 */, seed_lo INT /* uint32 */)  -- ADR-0001 U64 halves
+// battle_records(..., seed_hi BIGINT /* CHECK 0..4294967295 */, seed_lo BIGINT /* CHECK 0..4294967295 */)
 
 // Client-facing (wire shape formalized by ADR-0003):
 POST /api/commits        // idempotent by client-generated commit ID; atomic apply-or-reject
@@ -116,7 +121,11 @@ interface Mailer {       // provider-agnostic port — provider chosen at deploy
 ```
 
 ### Implementation Guidelines
-- **Must** apply each commit inside one transaction with the unique `commit_id` insert and all conditional updates; **must never** partially apply, and **must never** re-apply a seen commit ID.
+- **Must** apply each commit inside one transaction with the unique `commit_id` insert and all conditional updates; **must never** partially apply, and **must never** re-apply a seen commit ID or seed anchor.
+- **Must** handle commit-table collisions as a plain INSERT + catch of SQLSTATE 23505 with dispatch on the constraint name (`commits_pkey` → commit_id replay; `commits_seed_anchor` → seed replay) — **must never** use a single `ON CONFLICT` directive here (it targets only one arbiter, leaving the other constraint an unhandled error). Both collisions answer the commit's recorded `result_state_digest`; a seed-anchor collision with a **divergent payload** answers ADR-0003's `replay_mismatch` rejection instead of replaying.
+- **Must** populate `seed_hi/seed_lo` on every seed-anchored commit (ADR-0003's anchor list) and **must never** set them on commit_id-anchored types; a seed-anchored commit missing a half is a validation rejection. That is the storage-layer rule — on the wire the rule is one parseable seed string (missing/unparseable ⇒ `structure` rejection); the wire seed is the **canonical decimal string of the uint64**, split losslessly into the two uint32 halves by a server-boundary codec in which — and only in which — `BigInt` is permitted (the registry's `bigint_in_prng` ban on PRNG/battle-math paths is unchanged).
+- **Must** increment `accounts.state_digest` by atomic SQL (`SET state_digest = state_digest + 1`) inside the commit transaction and write the new value to `commits.result_state_digest`; **must never** read-modify-write the counter app-side (it races under concurrent commits and breaks monotonicity), and **must never** bump it on a replay.
+- **Must** convert BIGINT columns according to the chosen driver's int8 mapping — node-postgres returns int8 as strings, so convert explicitly; the uint32 halves and counter values are exact in `Number`. The driver's int8 mapping is pinned at scaffold (NOT SOURCEABLE — repo pins do not cover it).
 - **Must** reject consumable conflicts with the stale-state error (client re-fetches; no last-writer-wins — AC-E3).
 - **Must** compute session validity from the server clock with strict `<`; **must never** consult a client-supplied timestamp for validity.
 - **Must** store only the session-token hash server-side; **must never** log or persist raw tokens.
@@ -165,6 +174,8 @@ interface Mailer {       // provider-agnostic port — provider chosen at deploy
 - **argon2id parameter staleness** (OWASP guidance moves) → re-verify at implementation; the GDD ACs don't depend on the exact numbers, only on no-truncation.
 - **Schema freeze too tight** (a post-MVP need needs a non-additive migration) → the additive-only policy is the ADR's own testable rule; violations surface in `/architecture-review`.
 - **Commit-table growth** (append-only log) → MVP volume is trivial; retention/pruning is a later ops concern, not a schema change.
+- **Driver int8 mapping unpinned** (node-postgres returns BIGINT as strings; other drivers differ) → convert at the boundary per the guideline; the exact mapping is pinned at scaffold (NOT SOURCEABLE — repo pins do not cover the chosen driver).
+- **Seed-anchor scope asymmetry** (pre-existing ADR-0003 wording): its `battle_registrations` seed PK is globally unique while the commit anchor here is per-account — a rare cross-account seed collision registers once but commits twice; harmless at MVP. Align ADR-0003's wording at its next edit.
 
 ## GDD Requirements Addressed
 
@@ -178,7 +189,7 @@ interface Mailer {       // provider-agnostic port — provider chosen at deploy
 | forge-srs.md | OQ-FS1: QA delay-override profiles without touching shipped defaults | Build-config override in the client sim core; schema and production defaults untouched; due_at stays plain committed data |
 | question-content.md | Delivery/versioning owned here, schema owned by that GDD (Interactions table) | Content API stores/serves that GDD's schema as versioned JSONB payloads |
 | analytics.md | TR-analytics-010 deletion cascade | Structural FK cascade from every per-account table |
-| battle-system.md (consistency) | Battle seed persisted in the battle record (ADR-0001) | `seed_hi/seed_lo` uint32 columns matching `U64` halves — no BigInt in storage |
+| battle-system.md (consistency) | Battle seed persisted in the battle record (ADR-0001) | `seed_hi/seed_lo BIGINT` columns CHECK-bound to the uint32 range, matching `U64` halves — no JS BigInt type, no int32 overflow (amended 2026-11-10) |
 
 ## Performance Implications
 - **CPU**: argon2id ~19 MiB × t=2 per login verify — bounded by F2 throttling; commit validation is trivial JSON work.
@@ -187,7 +198,7 @@ interface Mailer {       // provider-agnostic port — provider chosen at deploy
 - **Network**: one commit per commit-point action (Core Rule 5) — five calls per battle session at most; content payload fetched only on version mismatch.
 
 ## Migration Plan
-Greenfield — no backend exists. The scaffold story lands the service skeleton + schema migration 0001 (accounts, sessions, commits, content) + the Mailer port; per-domain tables land with each system's first persistence story under the additive-only rule. accounts-backend OQ1/5/7 and forge-srs OQ-FS1 get their resolved-marks at those GDDs' next edits, pointing here.
+Greenfield — no backend exists. The scaffold story lands the service skeleton + schema migration 0001 (accounts with `state_digest`, sessions, commits with seed halves + `commits_seed_anchor` + `result_state_digest`, content) + the Mailer port; per-domain tables land with each system's first persistence story under the additive-only rule. accounts-backend OQ1/5/7 and forge-srs OQ-FS1 get their resolved-marks at those GDDs' next edits, pointing here.
 
 ## Validation Criteria
 1. Integration tests (`tests/integration/accounts-backend/`): commit atomicity (AC-C2), commit-ID replay answers original result with no re-apply (AC-E2), consumable stale-state rejection (AC-E3).
@@ -198,6 +209,13 @@ Greenfield — no backend exists. The scaffold story lands the service skeleton 
 6. Content invalidation test: version match uses cache; bump fetches and replaces; mid-session session stays on cached version (AC-D2/E5).
 7. Deletion cascade test: deleting an account leaves zero rows in every per-account table.
 8. Byte-identical generic responses for enumeration cases (AC-A5/A8) — asserted on serialized response bodies.
+9. Seed-column round-trip: a splitmix64 `U64` with both halves ≥ 2^31 — the exact case `INT` rejected — stores and reads back exactly; `seed_hi = 4294967295` inserts; a value outside the uint32 range is rejected by CHECK.
+10. Seed-anchor idempotency: the same `(account, type, seed)` redelivered under a *different* `commit_id` returns the recorded original `result_state_digest` with no re-apply; concurrent same-seed / different-`commit_id` commits → exactly one apply, the other replays or is rejected `replay_mismatch` on divergent payload; a commit_id-anchored type with seed columns set is rejected; a seed missing one half is rejected (CHECK + commit validation).
+11. `state_digest` monotonicity: an applied commit increments the counter by exactly 1 atomically; a replay returns that commit's recorded `result_state_digest` — not the account's current value — and does not increment.
+12. Wire seed round-trip: decimal uint64 string ⇄ two BIGINT halves lossless at the boundary values (0, 2^32−1, 2^63, 2^64−1).
+
+## Amendment History
+- **2026-11-10** — Four schema-defect fixes from `/architecture-review` 2026-11-10, all landed pre-migration-0001 (the schema existed only on paper; no additive migration was needed): (1) HIGH — battle-seed halves `INT` → `BIGINT` with uint32-range CHECKs; Postgres `integer` is signed int32 and would have rejected ~half of all seeds; (2) the partial unique index `commits_seed_anchor(account_id, type, seed_hi, seed_lo)` giving ADR-0003's seed-anchored idempotency (MP2: `battle_end`/`tower_stage_result`) its constraint — the commits rows are the applied-seed record, no separate `applied_seeds` table; (3) `accounts.state_digest` + `commits.result_state_digest` as the homes for ADR-0003's per-account monotonic counter and the replay answer the table previously had nowhere to store; (4) the SPA/API same-registrable-domain co-location constraint behind `SameSite=Lax`. Specialist additions folded in: 23505-catch-and-dispatch-on-constraint-name as the only collision pattern (a single `ON CONFLICT` targets one arbiter), atomic SQL counter increment, wire-seed decimal-string format with a narrow BigInt carve-out in the boundary codec, divergent-payload seed collision → `replay_mismatch`, pairing CHECK, driver int8-mapping note. Status remains **Accepted**: all fixes are corrections to storage mechanics this ADR already owns; no decision above them is reversed. Validated by the lead-programmer specialist (web engine primary); TD-ADR skipped (lean). Alignment item for ADR-0003's next edit: its `battle_registrations` seed PK is globally unique while the commit anchor is per-account.
 
 ## Related
 - Companion to `design/gdd/accounts-backend.md` (the GDD names this ADR in Dependencies and Open Question 1); resolves that GDD's OQ1/5/7 and hero-class OQ4's mechanics, forge-srs OQ-FS1, game-concept OQ2's implementation.
