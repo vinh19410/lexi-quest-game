@@ -10,25 +10,27 @@ jobs:
   test:
     name: Run vitest suites
     runs-on: ubuntu-latest
-    # The app scaffold (root package.json + vitest) does not exist yet — it
-    # lands with the ADR-0004 scaffold story. Until then this job skips
-    # itself instead of failing every push on a missing lockfile.
-    if: ${{ hashFiles('package.json') != '' }}
+    # The scaffold (root package.json + lockfile) landed 2026-11-10, so this
+    # job runs unconditionally now. (An earlier job-level
+    # `if: hashFiles('package.json') != ''` guard was removed: startup-failure
+    # diagnosis on runs 42737966412/42744394432/42778550816 — every push
+    # failed in 0s with zero jobs, before and after the scaffold — points at
+    # hashFiles not being permitted in a job-level `if`, so the guard
+    # rejected the whole workflow at parse time. The pre-scaffold guard it
+    # provided is moot with package.json on main.)
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Install pnpm
-        # NOT SOURCEABLE — pnpm/action-setup@v4 is not covered by
-        # docs/engine-reference/web/VERSION.md; verify the tag against the
-        # actions marketplace before the first scaffold commit.
+        # Tag verified 2026-11-10 against GitHub releases (v4 exists; latest
+        # is v6.1.1 — move deliberately, not reflexively).
         uses: pnpm/action-setup@v4
 
       - name: Set up Node
-        # NOT SOURCEABLE — setup-node@v6 is not covered by
-        # docs/engine-reference/web/VERSION.md; verify the tag before the
-        # first scaffold commit.
+        # Tag verified 2026-11-10 against GitHub releases (v6 exists; latest
+        # is v7.1.0 — move deliberately, not reflexively).
         uses: actions/setup-node@v6
         with:
           node-version: lts/*
