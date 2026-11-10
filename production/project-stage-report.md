@@ -59,3 +59,11 @@ The one artifact the catalog cannot see: all four ADRs are **Proposed, not Accep
 5. **`/consistency-check`** over the 15-GDD set (declare registry authority first).
 6. **Housekeeping** — fix tracker drift + the 2 duplicate `revised:` keys + `architecture.md`'s 2 doc bugs; fold the 4 review-flag GDD edits into their next edits.
 7. **`/gate-check technical-setup`** — the gate unlocks when ADR acceptance, control manifest, ux specs, and the consistency pass are in.
+
+---
+
+## Addendum — 2026-11-10, later this session
+
+**Gap 1 closed: the Foundation quartet is Accepted.** All four ADRs (0001 PRNG, 0002 persistence/backend, 0003 commit/trust, 0004 module layout) moved Proposed → Accepted via `/architecture-decision accept`, in the confirmed order 0001→0002→0004→0003 (ADR-0003's dependency gate verified live: 0001+0002 Accepted first). No stories were waiting (no epics exist). Follow-on state refresh: `architecture.md`'s two review-flagged doc bugs fixed ("14"→15 GDDs, stale "ADRs Referenced: none yet"), its layer-map box + TR-baseline note updated; `VERSION.md` code root + backend now read DECIDED. `requirements-traceability.md`'s 🟡-Proposed coverage column is left for the next `/architecture-review` run (fresh session). Acceptance edits are uncommitted.
+
+**Remaining to the technical-setup gate:** `/create-control-manifest` (now unblocked) → ux screen specs ①–⑧ → `/ux-review` → `/consistency-check` → housekeeping (gaps 6–7) → gate.

@@ -1,7 +1,7 @@
 # ADR-0003: Client↔Server Commit Protocol and Trust-Model Escalation
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-09

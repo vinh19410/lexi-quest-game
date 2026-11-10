@@ -1,7 +1,7 @@
 # ADR-0001: Seeded PRNG Algorithm and Stream Derivation
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-09

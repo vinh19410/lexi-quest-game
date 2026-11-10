@@ -2,12 +2,12 @@
 
 ## Document Status
 - Version: 1
-- Last Updated: 2026-11-09
+- Last Updated: 2026-11-10 (ADR-0001…0004 Accepted; review doc bugs fixed)
 - Engine: Web (browser SPA) — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^4.0.0 + lucide-react ^1.63.0 (out-of-catalog stack; pin source `docs/engine-reference/web/VERSION.md`, pinned 2026-11-09 from the prototype's `package.json`)
 - Workflow mode: **standard** — this document carries the System Layer Map and the critical ADR list. Full module-ownership tables, per-scenario data-flow walkthroughs, and API-boundary signatures are the `/create-architecture` `full` section set; the layer-map paragraphs below record the ownership essentials each GDD already authorizes.
-- GDDs Covered: `game-concept.md`, `systems-index.md`, and all 14 system GDDs (accounts-backend, question-content, hero-class, opponent-ai, battle-system, equipment, forge-srs, speech-io, ui-shell, tower, meta-progression, ranked-league, localization, analytics, real-pvp) — 15 systems, all Approved
-- Technical Requirements Baseline: **260 requirements** extracted across the 15 systems (all provisional — `docs/architecture/tr-registry.yaml` was empty at extraction time; `/architecture-review` registers permanent TR-IDs). Per-system: accounts-backend 20, question-content 16, hero-class 15, opponent-ai 16, battle-system 27, equipment 18, tower 15, meta-progression 18, ranked-league 18, forge-srs 15, speech-io 15, ui-shell 16, localization 17, analytics 17, real-pvp 17.
-- ADRs Referenced: none yet — 4 Foundation ADRs Proposed (see Required ADRs)
+- GDDs Covered: `game-concept.md`, `systems-index.md`, and all 15 system GDDs (accounts-backend, question-content, hero-class, opponent-ai, battle-system, equipment, forge-srs, speech-io, ui-shell, tower, meta-progression, ranked-league, localization, analytics, real-pvp) — 15 systems, all Approved
+- Technical Requirements Baseline: **260 requirements** extracted across the 15 systems (all provisional at extraction time — `docs/architecture/tr-registry.yaml` was empty; `/architecture-review` 2026-11-09 registered 418 permanent TR-IDs). Extraction-time per-system counts: accounts-backend 20, question-content 16, hero-class 15, opponent-ai 16, battle-system 27, equipment 18, tower 15, meta-progression 18, ranked-league 18, forge-srs 15, speech-io 15, ui-shell 16, localization 17, analytics 17, real-pvp 17.
+- ADRs Referenced: ADR-0001…0004 — the Foundation quartet, all **Accepted** 2026-11-10 (order 0001→0002→0004→0003, per `/architecture-review` 2026-11-09; see Required ADRs)
 - TD-ARCHITECTURE: skipped — lean mode
 - LP-FEASIBILITY: skipped — lean mode
 
@@ -45,7 +45,7 @@ covered by docs/engine-reference/web/` is the required notation for any that sur
 │                     hero-class                                      │
 ├────────────────────────────────────────────────────────────────────┤
 │  PLATFORM           Browser (React 19 / DOM / Web APIs)             │
-│                     + backend host (stack = ADR, Proposed)          │
+│                     + backend host (stack = ADR-0002, Accepted) │
 └────────────────────────────────────────────────────────────────────┘
 ```
 

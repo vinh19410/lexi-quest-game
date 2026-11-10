@@ -1,7 +1,7 @@
 # ADR-0002: Persistence Boundary and Backend Stack
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-09

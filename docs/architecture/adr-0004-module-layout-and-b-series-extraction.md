@@ -1,7 +1,7 @@
 # ADR-0004: Module Layout and Shared B-Series Extraction Plan
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-11-09
