@@ -40,7 +40,7 @@
 #   unsupported layout, with its number.
 
 version: 1
-last_updated: "2026-11-09"
+last_updated: "2026-11-10"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -85,6 +85,29 @@ state_ownership:
     referenced_by:
       - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
     added: 2026-11-09
+    revised: ""
+
+  - state: account_state_digest
+    status: active
+    owner_system: accounts-backend
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    interface: "per-account monotonic counter at accounts.state_digest (BIGINT, default 0), incremented only on applied commits by atomic SQL inside the commit transaction; every commit response returns that commit's recorded result_state_digest (string on the wire); clients may send base_digest for stale detection (ADR-0003); replays never bump the counter"
+    write_access: accounts-backend-only
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+      - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-10
+    revised: ""
+
+  - state: telemetry_event_store
+    status: active
+    owner_system: accounts-backend
+    adr: docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    interface: "custom analytics tables in the ADR-0002 Postgres (analytics_events monthly-partitioned on server received_at, unpartitioned analytics_event_ids claim table, quarantine/rejection tables, consent_audit anonymized-not-deleted on account deletion); analytics GDD owns event schemas + query/read; ingestion rides session auth — commit-piggyback extraction savepoint-guarded inside existing commit transactions, plus POST /api/analytics/flush"
+    write_access: accounts-backend-only
+    referenced_by:
+      - docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    added: 2026-11-10
     revised: ""
 
 # Example:
@@ -318,6 +341,7 @@ api_decisions:
     reason: "meta-progression MP2 pins the battle seed as the BattleResult anchor ('applied_seeds union {seed} in one atomic commit'); the seed doubles as battle identity across registration, commit and replay"
     referenced_by:
       - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
     added: 2026-11-09
     revised: ""
 
@@ -341,6 +365,39 @@ api_decisions:
     referenced_by:
       - docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
     added: 2026-11-09
+    revised: ""
+
+  - purpose: battle_seed_storage
+    status: active
+    api: "uint64 battle seed stored as two BIGINT columns (seed_hi, seed_lo) CHECK-bound to 0..4294967295 (battle_records always; commits iff the type is seed-anchored); halves remain plain uint32 JS numbers; wire seed = canonical decimal uint64 string, split losslessly by a server-boundary codec where BigInt alone is permitted"
+    not: "INT columns for uint32 halves (Postgres integer is signed int32 — ~half of all seeds overflow); signed reinterpretation at read; one column for the full uint64; JS BigInt in the PRNG module or battle math"
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    reason: "Postgres integer is signed int32; a uint32 half reaches 4294967295 so INT columns reject ~half of all seeds — HIGH defect found by /architecture-review 2026-11-10, fixed pre-migration-0001 (ADR-0002 amendment 2026-11-10)"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-10
+    revised: ""
+
+  - purpose: analytics_sink_route
+    status: active
+    api: "custom event tables in the same managed PostgreSQL as ADR-0002 (analytics_events monthly-partitioned on server received_at; claim-table dedup; POST /api/analytics/flush + commit-piggyback extraction; per-event route/schema/sampling declared in one shared analytics config file read by both hosts)"
+    not: "third-party SaaS telemetry SDK as the sink; a separate analytics datastore/warehouse as the sink (a Beta-era read replica or warehouse federated FROM this store is allowed — the sink does not move)"
+    adr: docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    reason: "TR-analytics-030 pins accounts-backend as the Hard sink: deletion stays structural (FK cascade; consent_audit anonymized instead of deleted), consent is server-enforced, one auth boundary; resolves analytics OQ-AN1"
+    referenced_by:
+      - docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    added: 2026-11-10
+    revised: ""
+
+  - purpose: analytics_event_dedup
+    status: active
+    api: "unpartitioned analytics_event_ids claim table; dedup = INSERT … ON CONFLICT (event_id) DO NOTHING RETURNING inside the flush/extract transaction, validate-before-claim, no surviving claim for rejected events; analytics_events PK is (event_id, received_at) and carries no event_id-uniqueness claim"
+    not: "a unique index on event_id over the partitioned events table (partitioned unique constraints must include the partition key); read-then-insert dedup (races); regenerating event_id at flush time"
+    adr: docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    reason: "received_at is server-assigned per delivery, so the partitioned table alone cannot enforce global event_id uniqueness; the claim table answers the concurrent-same-id race with one constraint and no read-modify-write"
+    referenced_by:
+      - docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    added: 2026-11-10
     revised: ""
 
 # Example:
@@ -430,6 +487,13 @@ forbidden_patterns:
     why: "accounts-backend AC-D1: content arrives via an observable network request (Core Rule 7); bundling breaks versioned cache invalidation and no-redeploy content iteration."
     adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
     added: 2026-11-09
+
+  - pattern: analytics_failure_aborts_commit
+    status: active
+    description: "Any code path where an analytics insert failure rejects, rolls back, or errors a game commit. Piggyback extraction is savepoint-guarded: an analytics failure rolls back only the savepoint, counts one rejection, and the commit applies."
+    why: "TR-analytics-019: emission never creates a commit point; an analytics outage may cost telemetry, never game state — the fire-and-forget rule dies the day extraction joins the commit's failure set."
+    adr: docs/architecture/adr-0006-analytics-sink-and-flush-transport.md
+    added: 2026-11-10
 
 # Example:
 #
