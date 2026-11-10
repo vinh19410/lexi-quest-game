@@ -237,6 +237,8 @@ The `listening_damage` formula is defined as:
 
 **Output Range:** min 70 (`atk = 0`) — never degenerate. Max at base: Wordsmith 106 × 1.3 × 1.25 = 172.25 → **172**; Arcane (atk 72 → base 102.4) 102.4 × 1.3 × 1.25 × 1.2 = 199.68 → **200**. No `ghost_armor` factor — that absence *is* the round type's identity (Core Rule 17): higher base (70 vs 40) plus piercing is why listening hits ≈ 40% harder than vocab. (Class multiplier added 2026-11-09 — cross-review D-B1: Arcane's passive moved off the inert mana multiplier onto the round its identity names.)
 
+**Multiplier composition (damage rounds):** every damage multiplier on a round — the class passive (`class_listening_damage_mult`), an equipment hook value (`pre_damage_mult`, equipment-owned; defaults to 1.0 when no equipped item maps to the round), `speedMult`, `crit_mult`, `fast_mult` — composes **multiplicatively into the float product**, with exactly **one** `round_half_up` at the end (the rounding convention equipment's hook table already assumes: "multiplies the full float product; rounded once at the end"). The class passive and an item hook are different sources and **stack** when both fire — equipment's hook-uniqueness rule binds equipped items against each other, never a passive against an item. Worked example — Arcane Speaker wielding Cung Collocation, fast, crit: `102.4 × 1.3 × 1.25 × 1.20 × 1.20 = 239.616 → 240`; applying either ×1.20 only once would print 200. *(Cross-review 2026-11-10 N-1: composition made explicit before any ADR pins a damage number.)*
+
 **Example:** Wordsmith, elapsed 2.5 s, fast: 106 × 1.225 × 1.25 = 162.31 → **162**. Slow, no crit: **106**. Arcane, slow, no crit: 102.4 × 1.0 × 1.0 × 1.2 = 122.88 → **123**.
 
 ### B5 — Ultimate damage
