@@ -1,0 +1,54 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run vitest suites
+    runs-on: ubuntu-latest
+    # The app scaffold (root package.json + vitest) does not exist yet — it
+    # lands with the ADR-0004 scaffold story. Until then this job skips
+    # itself instead of failing every push on a missing lockfile.
+    if: ${{ hashFiles('package.json') != '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        # NOT SOURCEABLE — pnpm/action-setup@v4 is not covered by
+        # docs/engine-reference/web/VERSION.md; verify the tag against the
+        # actions marketplace before the first scaffold commit.
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        # NOT SOURCEABLE — setup-node@v6 is not covered by
+        # docs/engine-reference/web/VERSION.md; verify the tag before the
+        # first scaffold commit.
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        # The vitest config (scaffold story) includes tests/unit and
+        # tests/integration and should emit test-results/ (junit reporter)
+        # so the upload step has content. ADR-0004 additionally requires a
+        # dual-context job here — formula vectors under the client build AND
+        # the server import, a cross-host mismatch fails the build. Add it
+        # when server/ and src/game/ exist.
+        run: pnpm exec vitest run
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test-results/

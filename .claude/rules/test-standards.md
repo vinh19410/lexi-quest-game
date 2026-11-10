@@ -22,6 +22,13 @@ paths:
     that filter in `commands.test` uses: the project name, or the distinct root
     `/setup-engine` chose when the project's name is also an engine area
     (`Audio`, `Core`, `Input`, …) — name tests under whichever it is
+  - **Web (vitest):** file `[system]_[feature]_test.ts` under
+    `tests/unit/[system]/` or `tests/integration/[system]/`;
+    `describe('[system].[feature]')` blocks, test titles
+    `'scenario → expected result'` (the web analogue of
+    `test_[scenario]_[expected]`). The runner config must set vitest
+    `include: ['tests/**/*_test.ts']` — the default `*.test.ts` glob will
+    not pick these files up
 - Every test must have a clear arrange/act/assert structure
 - Unit tests must not depend on external state (filesystem, network, database)
 - Integration tests must clean up after themselves
@@ -107,6 +114,25 @@ bool FHealthTakeDamageTest::RunTest(const FString& Parameters)
 }
 
 #endif
+```
+
+Web, vitest (`tests/unit/battle/battle_damage_test.ts`):
+
+```ts
+import { describe, expect, it } from 'vitest';
+
+describe('battle.damage', () => {
+  it('25 raw damage against 0 defense reduces 100 HP → 75', () => {
+    // Arrange
+    const health = makeHealth(100);
+
+    // Act
+    const next = applyDamage(health, { raw: 25, defense: 0 });
+
+    // Assert
+    expect(next.current).toBe(75);
+  });
+});
 ```
 
 **Incorrect**:

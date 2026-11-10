@@ -1,57 +1,61 @@
 # Project Stage Analysis
 
-**Date**: 2026-11-09 (second pass today — supersedes the morning report written before the Core quartet closed)
-**Stage**: Systems Design → Technical Setup (observed: boundary reached)
-**Stage Confidence**: CONCERNS — configured stage and observed artifacts disagree; signals straddle the Systems Design / Technical Setup boundary
+**Date**: 2026-11-10 (fourth pass — first since the Technical Setup wave landed; supersedes the 2026-11-09 third pass)
+**Stage**: Systems Design (configured) — **observed: Technical Setup, ~75% complete**
+**Stage Confidence**: CONCERNS — configured and observed stages now disagree (configured value is one phase behind the artifacts)
 **Workflow tier**: `rigor: standard` / `automation: autonomous` — only required docs flagged as gaps
 **Deterministic check**: `artifact-check.sh` — 49 steps catalogued, 25 NO_CHECK (the honest bound on existence checks)
 
 ## Stage Detection
 
-**Configured stage: Concept** (`project.yaml: project.stage: Concept`; `production/stage.txt` agrees).
+**Configured stage: Systems Design** (`project.yaml: project.stage` + `production/stage.txt` both read Systems Design; advanced by `/gate-check systems-design` on 2026-11-09, CONCERNS accepted).
 
-**Observed artifacts indicate: late Systems Design, at the Technical Setup boundary.**
+**Observed artifacts indicate: Technical Setup, late phase.** Since the third-pass report was written (still on 2026-11-09), the entire Technical Setup wave ran in autonomous sessions:
 
-Since the morning report (which observed 4/10 MVP GDDs approved), the design side essentially completed:
+| artifact-check step (technical-setup) | Status |
+|---|---|
+| create-architecture (`architecture.md`) | PRESENT — 242 lines, System Layer Map + Required ADRs + QQ ×10 |
+| architecture-decision (ADRs, min 3) | PRESENT ×4 — Foundation quartet ①PRNG ②persistence/backend ③commit/trust ④module-layout, all **Proposed** |
+| architecture-review | PRESENT — verdict **CONCERNS** (2026-11-09); 418 TRs registered, 54 covered 🟡, 2 named ❌ gaps, 4 GDD revision flags |
+| control-manifest | **ABSENT** — blocked by design until ADRs ①–④ are **Accepted** |
+| accessibility-doc | PRESENT — `design/accessibility-requirements.md` (285 lines, 12/12 sections, tier Standard) |
+| interaction-patterns | PRESENT — `design/ux/interaction-patterns.md` (556 lines, 19 patterns + 5 gaps) |
+| test-setup | PRESENT — `tests/` scaffolding (README, unit/integration dirs, smoke seed) + `.github/workflows/tests.yml` (job self-skips until `package.json` lands) |
 
-- **All 10 MVP GDDs authored** — `systems-index.md` Progress Tracker: "MVP systems designed 10/10", with 9 of 10 marked Approved in the tracker's own per-system list (accounts-backend, question-content, hero-class, opponent-ai, battle-system, forge-srs, tower, speech-io, equipment); ui-shell is "Designed pending review" in the tracker but per session state its lean review is DONE with both findings repaired in-session — a **fresh-session re-review is the remaining step**, not authoring.
-- Review logs exist for all 13 design docs (`design/gdd/reviews/`).
-- Both post-MVP starts done: meta-progression (vertical slice) and ranked-league (Alpha) designed pending review.
-- The Systems Design catalog steps that remain absent — `review-all-gdds` (no cross-review run) — are the signature of a phase finishing, not a phase starting.
+Pre-Production has also been touched in parallel: ux-design shows **SHORT (1/3 docs)** — the 8-screen spec ladder (Auth → Home hub → Battle HUD → Battle interactions → Forge/Tower/Inventory/League) is queued but unauthored.
 
-**Technical Setup partially applies**: the systems index exists and `engine-setup` is ABSENT (no engine/stack entry in `project.yaml` — the web-native TS/React decision of 2026-11-08 lives only in session state and the prior report). Foundation ADRs (persistence boundary, PRNG algorithm) are named in approved GDDs but not written. These are Technical Setup's opening moves, queued but unstarted.
-
-The configured `Concept` stage is stale: no `/gate-check` has advanced it while the design phase ran. This is expected lag, not lost work — but it must be reconciled before the technical-setup gate is meaningful.
+The one artifact the catalog cannot see: all four ADRs are **Proposed, not Accepted** — `/architecture-review`'s top recommendation is to accept them, which is a user decision.
 
 ## Completeness Overview
 
 | Area | Completeness | Detail |
 |------|-------------|--------|
-| Design (MVP) | ~95% authored+approved | 10/10 MVP GDDs authored; 9 approved in tracker + ui-shell repaired pending re-review = 10 pending that one step; 1 required catalog step (`review-all-gdds`) not yet run |
-| Design (post-MVP) | 2/6 started | meta-progression (vertical slice) and ranked-league (Alpha) designed pending review; localization + 3 others untouched (by design at this stage) |
-| Code | 0% authored | Code root `src/` holds only `CLAUDE.md` — 0 source files. Not greenfield: the working prototype lives in `raw-data/lexi-quest-design/` (React 19 + Vite + Tailwind v4, 15 source files, ~3,800 LOC, nested git repo, untracked in this repo) |
-| Architecture | 0% | `docs/architecture/` holds only `tr-registry.yaml` — 0 ADRs, no `architecture.md`; two ADRs (persistence boundary, PRNG/OA-OQ1) are explicitly queued |
-| Production | Matches stage | No epics/sprints expected before Pre-Production — not flagged at `standard`; session logs + `active.md` current |
-| Tests | 0% | No test files, no CI workflow (appropriate — no production code exists) |
-| Registry | 27 entries | `design/registry/entities.yaml` validated; file carries uncommitted modifications per git status |
+| Design | ~100% at this tier | 15/15 GDDs Approved (all re-reviews passed 2026-11-09); architecture-review flags 4 GDDs for small revisions (battle-system, opponent-ai, ranked-league, equipment — `resolve_round` input_source, grace-window wording, EQ25 stream-ownership cross-ref) |
+| Architecture | ~80% | `architecture.md` v1 + ADR quartet (Proposed) + architecture-review + 573-line requirements-traceability over 418 TRs. Missing: ADR acceptance, control-manifest, later-tier ADRs #6–#8 (analytics sink OQ-AN1, transport/hosting OQ-RVP4/5, speech scoring OQ-RVP3) |
+| Code | NOT ASSESSED formally (code root newly resolved by ADR-0004 `src/`, itself Proposed) — practically 0% | `src/` holds only `CLAUDE.md`; prototype lives in gitignored `raw-data/lexi-quest-design/` (~15 files, React 19 + Vite + Tailwind v4); scaffold story (Vite 8 + vitest install + example test) is queued |
+| Production | Matches stage + parallel start | No epics/stories/sprints (expected — not flagged at `standard`); ux screen specs 1/3; working tree **not clean** (see gap 5) |
+| Tests | 0% coverage, scaffolding present | `tests/` + CI workflow exist but self-skip until the app scaffold lands; example test = ADR-0004 scaffold story |
 
 ## Gaps Identified (per `standard` tier)
 
-1. **ui-shell fresh-session re-review pending** — review verdict NEEDS REVISION was reached and both findings (BLOCKING screenshot-AC count 7→8; RECOMMENDED commit nav-block cite E4→E2) were repaired in-session; the review protocol requires the re-review in a fresh session. This is the last blocker to a fully-approved MVP set.
-2. **`/review-all-gdds` not run** — a complete related set (all 10 MVP GDDs) now exists; the required cross-review is now appropriate and was premature this morning.
-3. **Foundation ADRs not written** — persistence boundary (accounts-backend companion ADR) and PRNG algorithm (OA-OQ1, owner technical-director); opponent-ai OA12/OA18/OA20 and the F2 stream contract registration block on these.
-4. **Engine/stack entry absent from `project.yaml`** — `engine-setup` reads ABSENT; the Concept → gate progression and the code-root resolution both need the web-native TS/React decision recorded in config, not just in session state.
-5. **`/consistency-check` queued but unrun** — with 13 GDDs now in flight, the cross-doc numeric consistency pass (per session state's plan) is due before the stage gate.
-6. *(Minor doc drift)* systems-index Progress Tracker is behind in two places: "Design docs reviewed: 4 / approved: 5" undercounts (review logs exist for 13 docs; 10 approvals on the tracker's own per-system lines), and ui-shell's status line predates its in-session repair. `design/registry/entities.yaml` and `project.yaml` carry uncommitted modifications.
+1. **ADRs ①–④ all Proposed — acceptance is the critical-path user decision.** Also reconcile a documented discrepancy: session state records the acceptance order as 0001→0002→0003→0004, while the architecture review recommends **0001→0002→0004→0003** (0002 has first-resolve items: seed_hi/seed_lo INT overflow, `(type,seed)` unique constraint, state_digest home, SameSite co-location; ADR-0003 depends on 0001+0002). The review's order supersedes the earlier note — confirm before accepting.
+2. **`/create-control-manifest` blocked** until ADRs are Accepted — the only ABSENT required Technical Setup artifact.
+3. **UX screen-spec ladder incomplete** (artifact-check `SHORT`, 1/3 docs) — 8 specs queued in ui-shell's UI Requirements ladder, then `/ux-review` all, before the pre-production gate.
+4. **`/consistency-check` still unrun** — carried over from the third pass; the numeric cross-pass over all 15 approved GDDs is due before the technical-setup gate. Note the old `design/registry/entities.yaml` now coexists with the new `docs/registry/architecture.yaml` (TR registry) — the consistency pass should state which registry is authoritative for GDD values.
+5. **Entire Technical Setup wave is uncommitted** — `architecture.md`, all 4 ADRs, the architecture review + traceability matrix, `tests/`, `.github/workflows/`, `design/accessibility-requirements.md`, `design/ux/`, plus edits to `tr-registry.yaml`, `architecture.yaml`, `VERSION.md`, `test-standards.md`, `technical-preferences.md`. Per the collaboration protocol no commit happens without user instruction — this needs an explicit go-ahead.
+6. **Systems-index tracker drift persists** — summary rows (~:206–209) still list battle-system / hero-class / question-content "Needs Revision" and real-pvp "Designed pending review" although the per-system rows read Approved.
+7. **Registry duplicate `revised:` keys ×2** — `design/registry/entities.yaml` lines ~500 and ~1058 (parser-confirmed; the line numbers shifted from the third pass's 1072-1073, and a second instance exists).
+8. **Architecture-review follow-ups**: 2 named ❌ TRs (TR-analytics-043 → ADR #6, TR-real-pvp-039 → ADR #8), 4 GDD revision flags, 2 doc bugs in `architecture.md` ("14 system GDDs"→15; stale "ADRs Referenced: none yet").
+9. **`raw-data/` fate decision rides ADR-0004 acceptance** — ADR-0004 freezes it in place as a read-only pin source; the product-level track-vs-migrate call stays deferred to a Production review.
 
-**Not flagged at this tier**: art bible (no visual-asset stories), UX specs, epics/sprint plans, non-MVP GDDs, unit tests (no production code yet).
+**Not flagged at this tier**: art bible (no visual-asset stories), epics/sprint plans, non-required architecture docs, unit tests.
 
 ## Recommended Next Steps (priority order)
 
-1. **Fresh-session `/design-review ui-shell`** — closes the last open MVP approval (session state's declared next step).
-2. **`/consistency-check`** — cross-doc numeric pass over the now-complete MVP set.
-3. **`/architecture-decision` × 2** (technical-director) — persistence boundary ADR + PRNG algorithm ADR; unblocks opponent-ai OA12/OA18/OA20 and registers the F2 stream contract.
-4. **Write the web-native stack entry to `project.yaml`** — closes gap 4, resolves the code root formally, unblocks the technical-setup gate.
-5. **`/review-all-gdds`** — the complete MVP set now justifies the required cross-review.
-6. **`/gate-check technical-setup`** — reconciles the stale `Concept` stage once 1–5 land; expect the observed stage to then formally advance.
-7. **Housekeeping**: bring the systems-index Progress Tracker counts up to date; commit the tracked-but-uncommitted design work (`design/gdd/`, `design/registry/entities.yaml`, `project.yaml`); decide `raw-data/`'s fate (track, or migrate into `src/` at Production start).
+1. **Accept the Foundation ADR quartet** (user decision; confirm the review's 0001→0002→0004→0003 order vs the session state's 0001→0002→0003→0004) — unblocks the control manifest and the scaffold story.
+2. **Commit the Technical Setup wave** (needs explicit user instruction; natural splits: architecture docs / ADRs + review / test scaffolding + CI / UX + accessibility docs).
+3. **`/create-control-manifest`** once ADRs are Accepted.
+4. **Finish the ux-design screen specs ①–⑧** → `/ux-review` all.
+5. **`/consistency-check`** over the 15-GDD set (declare registry authority first).
+6. **Housekeeping** — fix tracker drift + the 2 duplicate `revised:` keys + `architecture.md`'s 2 doc bugs; fold the 4 review-flag GDD edits into their next edits.
+7. **`/gate-check technical-setup`** — the gate unlocks when ADR acceptance, control manifest, ux specs, and the consistency pass are in.

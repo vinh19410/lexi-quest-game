@@ -26,12 +26,12 @@
 <!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
 <!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->
 
-- **Target Platforms**: [TO BE CONFIGURED — e.g., PC, Console, Mobile, Web]
-- **Input Methods**: [TO BE CONFIGURED — e.g., Keyboard/Mouse, Gamepad, Touch, Mixed]
-- **Primary Input**: [TO BE CONFIGURED — the dominant input for this game]
-- **Gamepad Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Touch Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Platform Notes**: [TO BE CONFIGURED — any platform-specific UX constraints]
+- **Target Platforms**: Web (browser SPA; phone-first + laptop) — confirmed game-concept 2026-11-08
+- **Input Methods**: Touch (mobile browser), Keyboard/Mouse (desktop browser)
+- **Primary Input**: Touch (phone-first per Target Player Profile)
+- **Gamepad Support**: None
+- **Touch Support**: Full
+- **Platform Notes**: web-only stack (see `docs/engine-reference/web/VERSION.md`); 44 px minimum hit areas; pinch-zoom never blocked; Vietnamese UI with `lang="en"` spans for English study content; filled by hand 2026-11-09 during `/ux-design` (out-of-catalog engine registered by hand — commit 692771c precedent)
 
 ## Naming Conventions
 
