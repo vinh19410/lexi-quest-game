@@ -26,14 +26,17 @@ Do not fill the gap from training data — write
 
 ## Open Decisions (owned by Technical Setup)
 
-- **Code root** — the app is not scaffolded yet. A Vite app at the repo root
-  gives `src/`, which `resolve_code_root` auto-detects; a nested app
-  directory would leave the code root unresolved (its callers announce that
-  honestly) until the architecture ADR picks one.
-- **Test framework** — the prototype has none. `/test-setup` decides; vitest
-  is the Vite-native candidate.
-- **Backend / persistence** — the persistence-boundary and PRNG ADRs are
-  queued (see `design/gdd/systems-index.md` high-risk table).
+- **Code root — proposed** in ADR-0004 (`docs/architecture/adr-0004-module-layout-and-b-series-extraction.md`):
+  `src/` (Vite app at the repo root). Pending ADR acceptance.
+- **Test framework — DECIDED (`/test-setup`, 2026-11-09): vitest.** Exact
+  version pinned at app-scaffold time and must pair with Vite ^8.0.5 —
+  NOT SOURCEABLE: vitest's Vite-8 peer range is not covered by any path in
+  this repo; resolve against the pnpm registry when the scaffold story runs.
+  Naming contract: `tests/**/*_test.ts`, which needs an explicit vitest
+  `include` (the default `*.test.ts` glob misses it).
+- **Backend / persistence — proposed** in ADR-0002
+  (`docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md`):
+  Node LTS + Fastify + PostgreSQL. Pending ADR acceptance.
 
 ## History
 

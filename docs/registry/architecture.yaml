@@ -40,7 +40,7 @@
 #   unsupported layout, with its number.
 
 version: 1
-last_updated: ""
+last_updated: "2026-11-09"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -53,7 +53,39 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: player_progress_state
+    status: active
+    owner_system: accounts-backend
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    interface: "commit API (atomic whole-commit apply-or-reject, idempotent by client-generated commit ID); clients hold a memory display cache only and never write game state to browser storage"
+    write_access: accounts-backend-only
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - state: question_content_banks
+    status: active
+    owner_system: accounts-backend
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    interface: "versioned content API; client caches payloads keyed by content version in browser storage (instant invalidation on version compare at app load); schema semantics owned by question-content"
+    write_access: accounts-backend-only
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - state: battle_session_registry
+    status: active
+    owner_system: accounts-backend
+    adr: docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    interface: "battle-start registration API keyed by seed (the battle identity: registration key, commit anchor, replay input); status open -> resolved | forfeited; ranked forfeit detection runs here"
+    write_access: accounts-backend-only
+    referenced_by:
+      - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #
@@ -81,7 +113,77 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: prng_stream
+    status: active
+    pattern: direct_call
+    producer: prng-module (src/game/prng.ts, Foundation layer)
+    consumers:
+      - battle-system
+      - opponent-ai
+      - ranked-league
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    signal_signature: "childStream(seed: U64, tag: DomainTag) -> RngStream with nextU64() / draw53() / rngInt(lo, hi); hashH(x: U64) -> number (ranked-league H)"
+    referenced_by:
+      - docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+    revised: ""
+
+  - contract: progress_commit
+    status: active
+    pattern: rpc
+    producer: battle-system, forge-srs, equipment, tower, meta-progression (via the client commit layer)
+    consumers:
+      - accounts-backend
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    signal_signature: "POST /api/commits — client-generated commit ID, atomic whole-commit apply-or-reject, idempotent replay of a seen ID, stale-state rejection on consumable conflicts"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - contract: content_delivery
+    status: active
+    pattern: rpc
+    producer: accounts-backend
+    consumers:
+      - battle-system
+      - tower
+      - forge-srs
+      - ui-shell
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    signal_signature: "GET /api/content/version -> current content version; GET /api/content -> payload (fetched only on version mismatch; cache keyed by version in browser storage)"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - contract: battle_telemetry
+    status: active
+    pattern: rpc
+    producer: battle-system (every battle, from MVP)
+    consumers:
+      - accounts-backend
+    adr: docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    signal_signature: "POST /api/battles/start {seed, encounter, module, opponent_config_ref, content_version, loadout_digest} -> idempotent registration; ranked Stage-1 commits without an open registration are rejected"
+    referenced_by:
+      - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-09
+    revised: ""
+
+  - contract: resolve_round_substitution_point
+    status: active
+    pattern: direct_call
+    producer: battle-system (round engine export)
+    consumers:
+      - opponent-ai
+      - real-pvp
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    signal_signature: "resolve_round(profile, mode, seed, round_index, input: RoundInputSource) -> RoundOutcome — opponent input source is a parameter (ghost profile at MVP, live-commit stream in PvP); no encounter-kind branching inside battle logic"
+    referenced_by:
+      - docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #
@@ -141,7 +243,105 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: seeded_game_rng
+    status: active
+    api: "splitmix64 (64-bit state as [hi, lo] 32-bit halves via Math.imul, single 64-bit seed, golden-gamma step); all battle-adjacent draws from src/game/prng.ts streams"
+    not: "Math.random; BigInt in the PRNG; any hand-rolled seeded stream outside src/game/prng.ts"
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    reason: "Platform-stable bit-exact replay (BS-026) and statistical QA (OA-014) require a seedable deterministic generator; draw53 takes the top 53 bits of each output"
+    referenced_by:
+      - docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: uniform_random_integer
+    status: active
+    api: "rng_int = lo + (draw53 mod (hi - lo + 1)); draw53 = top 53 bits of one 64-bit output; naive modulo blessed for ranges <= 501"
+    not: "float multiplication scaling; naive modulo for ranges above 2^32 (rejection sampling required there)"
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    reason: "Fixed-point comparison domain is exactly representable in a JS number; modulo bias at range 501 is ~5.6e-14, statistically undetectable (RL-011)"
+    referenced_by:
+      - docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: session_token_mechanism
+    status: active
+    api: "opaque 256-bit crypto-random session token, stored SHA-256-hashed server-side (sessions table), delivered as httpOnly Secure SameSite=Lax cookie; validity from the server clock only"
+    not: "stateless JWT (reset/logout revocation AC-A6/A7 needs server-side state anyway); client-supplied timestamps in validity checks"
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    reason: "Instant revocation is a GDD acceptance criterion; opaque server-side tokens implement F1/AC-S3 as written"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: password_hashing
+    status: active
+    api: "argon2id m=19456 KiB t=2 p=1 (re-verify against current OWASP guidance at implementation)"
+    not: "bcrypt (72-byte input ceiling would force silent truncation or a GDD AC-A3 rewrite)"
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    reason: "No input-length ceiling keeps the GDD's 128-char bound byte-identical; passwords above the bound are rejected, never truncated"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: primary_database
+    status: active
+    api: "PostgreSQL (single managed instance, provider-agnostic connection string; provider chosen at deploy)"
+    not: "BaaS-platform-as-architecture (auth/rules in a vendor layer); document stores (commit atomicity, unique-constraint idempotency, conditional consumable guards, FK cascades are all native SQL needs)"
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    reason: "Every storage requirement (AC-C2/E2/E3, deletion cascade) is native relational behavior; owning the commit pipeline as TypeScript keeps the ranked/PVP server-computed future importable"
+    referenced_by:
+      - docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: ranked_outcome_verification
+    status: active
+    api: "replay-verify: server re-runs the shared deterministic module over (seed, answer_log) and compares derived vs reported outcome before applying any ranked RP delta"
+    not: "a parallel server-side recompute of battle rules (two-truths drift risk); HMAC-signed client attestations (extractable bundle secret authenticates the build, not the outcome)"
+    adr: docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    reason: "Any recompute that reuses the battle engine IS replay; one that does not forks battle rules. The module is pure TS with cross-host vectors (ADR-0001) — replay is the single-truth choice"
+    referenced_by:
+      - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: commit_idempotency_anchor
+    status: active
+    api: "battle_end + tower_stage_result commits anchor on seed (unique constraint, MP2); all other commit types anchor on client-generated commit_id; both carried on every envelope"
+    not: "one uniform idempotency key for all commit types (would discard the GDD-pinned seed anchor for battle results)"
+    adr: docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    reason: "meta-progression MP2 pins the battle seed as the BattleResult anchor ('applied_seeds union {seed} in one atomic commit'); the seed doubles as battle identity across registration, commit and replay"
+    referenced_by:
+      - docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: shared_formula_module
+    status: active
+    api: "one implementation of battle B1-B12 and every system's F-series math in src/game/formulas/ (pure TS, time-as-parameter), imported verbatim by the client SPA and the server host; dual-context CI vector suites make drift a build failure"
+    not: "a server-side port/fork of battle formulas ('keep them in sync'); ambient reads of clocks or RNG inside formulas"
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    reason: "real-pvp Core Rule 2: formula drift between client ghost battles and server duels is a build failure, not a balance question (OQ-RVP1, one formula module two hosts)"
+    referenced_by:
+      - docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
+    revised: ""
+
+  - purpose: class_data_source
+    status: active
+    api: "hero class records live in src/game/data/classes.json, loaded at runtime by loadClassRegistry(); passive constants in the shared constants module"
+    not: "hardcoded class stat/passive values in TypeScript source"
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    reason: "hero-class HC1: editing the data file changes what the registry serves with no code change; HC7: fast_answer_threshold read by both consumers from one shared constant"
+    referenced_by:
+      - docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
+    revised: ""
 
 # Example:
 #
@@ -167,7 +367,69 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: math_random_in_game_math
+    status: active
+    description: "Any use of Math.random in battle, opponent-ai, ranked-league, or equipment math. All seeded draws come from src/game/prng.ts streams."
+    why: "Math.random is unseedable - replay from seed (BS-026) and statistical QA (OA-014) both require deterministic draws; an off-stream draw corrupts stream accounting."
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+
+  - pattern: prng_stream_interleaving
+    status: active
+    description: "Sharing one RngStream across domains, interleaving draws from different domains, re-seeding a stream mid-battle, or re-drawing a resolved round."
+    why: "Each domain (ghost, crit, question, eliminate, ranked-peer) consumes only its own (seed, tag) stream in strict round order; sharing breaks replay accounting and post-MVP append-only stream compatibility (opponent-ai F2 rules 3 and 7)."
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+
+  - pattern: bigint_in_prng
+    status: active
+    description: "BigInt arithmetic anywhere in the PRNG module or its callers' hot paths. 64-bit values travel as [hi, lo] 32-bit halves."
+    why: "Half-word Math.imul arithmetic is spec-identical across runtimes and cheap to serialize into battle records; BigInt is slower and serializes awkwardly."
+    adr: docs/architecture/adr-0001-seeded-prng-and-stream-derivation.md
+    added: 2026-11-09
+
+  - pattern: game_state_in_browser_storage
+    status: active
+    description: "Writing hero, gear, rune-queue, quest, tower or progress data to localStorage, sessionStorage or IndexedDB. Only the session cookie and the version-keyed content cache may live in browser storage."
+    why: "Core Rule 4 / AC-C6: progress truth is server-side from day one; a local copy forks the truth and breaks the continuity promise."
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+
+  - pattern: client_clock_for_session_validity
+    status: active
+    description: "Consulting any client-supplied timestamp when computing session validity, expiry, or server-side time boundaries."
+    why: "F1/AC-S3: validity is computed from the server clock alone, immune to device clock skew; the 30-day boundary is asserted on the server clock second."
+    adr: docs/architecture/adr-0002-persistence-boundary-and-backend-stack.md
+    added: 2026-11-09
+
+  - pattern: grace_extension_by_client_events
+    status: active
+    description: "Extending the ranked forfeit window (ranked_forfeit_grace_min = 15, from battle-start) because of client events such as commit retries or pings. The window is measured from battle-start only."
+    why: "RKL7's boundary semantics are the assertable contract (nothing at T+14:59, forfeit at T+15); event-extension lets a scripted retry loop never forfeit — the quit-to-dodge abuse Core Rule 11 closes returns as a hang."
+    adr: docs/architecture/adr-0003-commit-protocol-and-trust-model.md
+    added: 2026-11-09
+
+  - pattern: hardcoded_gameplay_values
+    status: active
+    description: "Any gameplay constant (stats, damage, delays, thresholds, pool sizes) written as a literal in logic source instead of src/game/constants/ or a JSON data file."
+    why: "Coding standard (data-driven gameplay values) + hero-class HC1: editing the data file must change what the registry serves with no code change; restated constants drift."
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
+
+  - pattern: ui_or_network_imports_in_sim_core
+    status: active
+    description: "src/game/** importing React, DOM/browser globals, fetch, browser storage, or src/ui|src/net code — or reading a clock inside a formula."
+    why: "The sim core is imported verbatim by the server host (ADR-0002/0003/0004); a browser import breaks the server build and a clock read breaks determinism (time enters as a parameter)."
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
+
+  - pattern: build_time_content_bundling
+    status: active
+    description: "Importing content/ question banks into the client bundle or reading them at build time on the client."
+    why: "accounts-backend AC-D1: content arrives via an observable network request (Core Rule 7); bundling breaks versioned cache invalidation and no-redeploy content iteration."
+    adr: docs/architecture/adr-0004-module-layout-and-b-series-extraction.md
+    added: 2026-11-09
 
 # Example:
 #
