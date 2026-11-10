@@ -5,8 +5,8 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **Engine**: [CHOOSE: Web / Godot 4 / Unity / Unreal Engine 5]
+- **Language**: [CHOOSE: TypeScript / GDScript / C# / C++ / Blueprint]
 - **Version Control**: Git with trunk-based development
 - **Build System**: [SPECIFY after choosing engine]
 - **Asset Pipeline**: [SPECIFY after choosing engine]
@@ -23,10 +23,9 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 <!-- ENGINE-REFERENCE-IMPORT: the line below is engine-specific. /setup-engine
      rewrites it to @docs/engine-reference/<engine>/VERSION.md for the chosen
      engine, so a Unity or Unreal project stops loading the Godot reference every
-     session. This project configured engine.name: Web by hand (out of
-     /setup-engine's Godot|Unity|Unreal catalog — see project.yaml), so the
-     import was hand-swapped the same way. Skills that need the pinned version
-     read docs/engine-reference/<engine>/VERSION.md on demand regardless. -->
+     session. This project runs engine.name: Web (project.yaml), so the import
+     points at the web pin. Skills that need the pinned version read
+     docs/engine-reference/<engine>/VERSION.md on demand regardless. -->
 @docs/engine-reference/web/VERSION.md
 
 
@@ -63,8 +62,8 @@ Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
 
 See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 
-> **First session?** If the project has no engine configured and no game concept,
-> run `/start` to begin the guided onboarding flow.
+> **First session?** Say "make me a game" (`/prototype`), or run `/start` to begin
+> the guided onboarding flow.
 
 ## Coding Standards
 
