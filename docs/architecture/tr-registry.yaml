@@ -48,7 +48,7 @@
 #   GDD is equipment.md) — registered from its citation text.
 
 version: 1
-last_updated: 2026-11-09
+last_updated: 2026-11-10
 
 requirements:
 # --- accounts-backend ---
@@ -2144,9 +2144,9 @@ requirements:
 - id: TR-ranked-league-026
   system: ranked-league
   gdd: design/gdd/ranked-league.md
-  requirement: "A started ranked battle with no committed result within the 15-min grace window (ranked_forfeit_grace_min, provisional, safe 10–30) records one forfeit: −14, no rewards/runes."
+  requirement: "A started ranked battle with no committed result within the 15-min grace window (ranked_forfeit_grace_min, blessed 15, safe band 10–30, measured from started_at — ADR-0003 §4; client events do not extend it) records one forfeit: −14, no rewards/runes."
   created: 2026-11-09
-  revised: ""
+  revised: 2026-11-10
   status: active
 - id: TR-ranked-league-027
   system: ranked-league

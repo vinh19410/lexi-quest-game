@@ -1,16 +1,17 @@
 # Architecture Traceability Index
-Last Updated: 2026-11-09
+Last Updated: 2026-11-10
 Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^4.0.0 + lucide-react ^1.63.0
 
 > Source of the TR-IDs: `docs/architecture/tr-registry.yaml` (418 registered requirements).
-> Source of ADR attribution: each ADR's **GDD Requirements Addressed** table (`adr-0001`…`adr-0004`).
+> Source of ADR attribution: each ADR's **GDD Requirements Addressed** table (`adr-0001`…`adr-0005`).
 >
-> **How statuses derive.** A requirement is 🟡 when an ADR names it (or its provisional
-> range) in a coverage table; ❌ when its text explicitly defers a decision to a pending
-> ADR; "—" when it is implementation tier — governed by its GDD and the coding standards,
-> with no architecture-level decision required at `modes.workflow: standard`. Note that ALL
-> four ADRs are `Proposed`: 🟡 here means "decision exists", not "decision accepted"
-> (route: `/architecture-decision` accept). The pre-review provisional baseline of 260 was
+> **How statuses derive.** ✅ when an **Accepted** ADR names the requirement (or its
+> provisional range) in a coverage table; ❌ when its text explicitly defers a decision to a
+> pending ADR; "—" when it is implementation tier — governed by its GDD and the coding
+> standards, with no architecture-level decision required at `modes.workflow: standard`.
+> All five ADRs are now **Accepted** (quartet 2026-11-10; ADR-0005 2026-11-10), so the 2026-11-09
+> run's ✅ rows flip to ✅ and ADR-0005 adds 9 newly covered rows (tower-018/019;
+> question-content-020/026/027/028/029/030/032). The pre-review provisional baseline of 260 was
 > superseded by the registered 418-requirement set (registry header, PROVENANCE).
 >
 > **Vocabulary note:** no ⚠️ (partial) rows this run. The known partial-decision items are
@@ -19,12 +20,12 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 ## Coverage Summary
 
 - Total requirements: **418**
-- Covered (🟡, by Proposed ADRs): **54** (13%)
+- Covered (✅, by Accepted ADRs): **63** (15%)
 - Partial (⚠️): **0**
-- Gaps (❌, named pending-ADR scope): **2** (<1%)
-- Implementation tier ("—", GDD-owned, no ADR required): **362** (87%)
+- Gaps (❌, named pending-ADR scope): **2** (<1%) — both Full-Vision deferred tier
+- Implementation tier ("—", GDD-owned, no ADR required): **353** (84%)
 
-| System | Total | 🟡 | ❌ | — |
+| System | Total | ✅ | ❌ | — |
 |--------|-------|----|----|---|
 | accounts-backend | 39 | 10 | 0 | 29 |
 | analytics | 27 | 1 | 1 | 25 |
@@ -35,30 +36,30 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | localization | 26 | 0 | 0 | 26 |
 | meta-progression | 30 | 4 | 0 | 26 |
 | opponent-ai | 21 | 5 | 0 | 16 |
-| question-content | 28 | 3 | 0 | 25 |
+| question-content | 28 | 10 | 0 | 18 |
 | ranked-league | 27 | 8 | 0 | 19 |
 | real-pvp | 26 | 3 | 1 | 22 |
 | speech-io | 30 | 1 | 0 | 29 |
-| tower | 25 | 2 | 0 | 23 |
+| tower | 25 | 4 | 0 | 21 |
 | ui-shell | 28 | 1 | 0 | 27 |
 
 ## Full Matrix
 
 
-### accounts-backend — 39 requirements (10 🟡 / 0 ❌ / 29 —)
+### accounts-backend — 39 requirements (10 ✅ / 0 ❌ / 29 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-accounts-backend-008 | All persistent game state (hero, XP, gold, gear, rune queue, quests, tower, records) stored server-side; client keeps only an in-memory display cache and never writes game state to browser storage | ADR-0002 | 🟡 Proposed |
-| TR-accounts-backend-009 | Client state pushed at five defined commit points (battle end, forge action, equip/loadout, quest claim, tower stage result) | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-010 | Each commit is atomic — fully applied or rejected | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-011 | Every commit carries a client-generated unique commit ID; server answers a repeated ID with the original result without re-applying | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-012 | Question banks (battle, tower, forge filler) fetched from the backend content API, never bundled into the SPA; content API + caching join MVP backend scope | ADR-0002 | 🟡 Proposed |
-| TR-accounts-backend-013 | Client caches versioned content payloads in browser storage keyed by content version (content cache, never game state); new version invalidates; cache persists across reloads | ADR-0002 | 🟡 Proposed |
-| TR-accounts-backend-014 | Commit retry ladder delay_n = min(1 s × 2ⁿ + jitter(0–0.5 s), 30 s), 5 auto-retries then Unsaved-state (commit retained in memory, banner, blocked actions); manual retry restarts at n=0 | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-015 | On commit failure the client retains unsaved state and retries; a battle never ends unsaved silently | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-017 | Session expiry mid-battle: commit fails 401 → re-login prompt ("Session hết hạn") → pending commit retried after successful login, ladder restarted | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-accounts-backend-019 | System stores and serves what other systems produce; never computes a reward, drop, or review schedule | ADR-0002 | 🟡 Proposed |
+| TR-accounts-backend-008 | All persistent game state (hero, XP, gold, gear, rune queue, quests, tower, records) stored server-side; client keeps only an in-memory display cache and never writes game state to browser storage | ADR-0002 | ✅ Accepted |
+| TR-accounts-backend-009 | Client state pushed at five defined commit points (battle end, forge action, equip/loadout, quest claim, tower stage result) | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-010 | Each commit is atomic — fully applied or rejected | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-011 | Every commit carries a client-generated unique commit ID; server answers a repeated ID with the original result without re-applying | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-012 | Question banks (battle, tower, forge filler) fetched from the backend content API, never bundled into the SPA; content API + caching join MVP backend scope | ADR-0002 | ✅ Accepted |
+| TR-accounts-backend-013 | Client caches versioned content payloads in browser storage keyed by content version (content cache, never game state); new version invalidates; cache persists across reloads | ADR-0002 | ✅ Accepted |
+| TR-accounts-backend-014 | Commit retry ladder delay_n = min(1 s × 2ⁿ + jitter(0–0.5 s), 30 s), 5 auto-retries then Unsaved-state (commit retained in memory, banner, blocked actions); manual retry restarts at n=0 | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-015 | On commit failure the client retains unsaved state and retries; a battle never ends unsaved silently | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-017 | Session expiry mid-battle: commit fails 401 → re-login prompt ("Session hết hạn") → pending commit retried after successful login, ladder restarted | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-accounts-backend-019 | System stores and serves what other systems produce; never computes a reward, drop, or review schedule | ADR-0002 | ✅ Accepted |
 | TR-accounts-backend-021 | Authenticated play only — no guest mode at MVP; account creation is part of first-run onboarding so no local-to-server migration code ever exists | — | — Implementation tier |
 | TR-accounts-backend-022 | One account, one profile — an email+password identity with exactly one player profile at MVP | — | — Implementation tier |
 | TR-accounts-backend-023 | Email+password auth: unique case-insensitive email, min-8-char password checked client-side and enforced server-side, reset via emailed link, no OAuth at MVP with provider-agnostic identity record | — | — Implementation tier |
@@ -89,11 +90,11 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-accounts-backend-048 | Forge commit shape: rune R removed from queue exactly once and Upgrade Stone granted in the same atomic commit; gear +level happens later in equipment's separate commit | — | — Implementation tier |
 | TR-accounts-backend-049 | Concurrent-session cap undecided; design currently allows unlimited concurrent sessions per account | — | — Implementation tier |
 
-### analytics — 27 requirements (1 🟡 / 1 ❌ / 25 —)
+### analytics — 27 requirements (1 ✅ / 1 ❌ / 25 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-analytics-010 | Account deletion cascades to telemetry within 30 days (purge or irreversible anonymize); raw events 90-day TTL (TTL_raw) then rollup + purge. | ADR-0002 | 🟡 Proposed |
+| TR-analytics-010 | Account deletion cascades to telemetry within 30 days (purge or irreversible anonymize); raw events 90-day TTL (TTL_raw) then rollup + purge. | ADR-0002 | ✅ Accepted |
 | TR-analytics-018 | Sources call one track(event_name, payload) helper; analytics owns name + versioned schema (mandatory schema_v); meaning change = new name or schema_v bump. | — | — Implementation tier |
 | TR-analytics-019 | Fire-and-forget: emission never blocks, mutates state, or creates a commit point; rides existing commits; UUIDv7 event_id at track() time, sink dedups on it. | — | — Implementation tier |
 | TR-analytics-020 | Loss acceptable: overflow or unreachable sink past retry budget drops events oldest-first; never re-emits a commit. | — | — Implementation tier |
@@ -121,17 +122,17 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-analytics-042 | Blocking test scaffolding: authenticated test sink, injectable clock for TTL/retention constants, query-layer reference implementations of Dn/C_k/T1. | — | — Implementation tier |
 | TR-analytics-043 | Sink storage route deliberately open (custom tables vs third-party pipeline, OQ-AN1); GDD fixes behaviour, not the route. | ADR #6 — analytics sink route (OQ-AN1) | ❌ Pending ADR |
 
-### battle-system — 31 requirements (7 🟡 / 0 ❌ / 24 —)
+### battle-system — 31 requirements (7 ✅ / 0 ❌ / 24 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-battle-system-003 | Battle runs on a fixed-tick simulated clock, not wall-clock setTimeout; ui-shell renders events and may fast-forward but never mutates battle state | ADR-0001 | 🟡 Proposed |
-| TR-battle-system-011 | Crit fast path: elapsed < 3000 ms (strict) guarantees 1.25 with zero stream draws; otherwise exactly one draw from battle's crit stream at crit_stat/100 | ADR-0001 | 🟡 Proposed |
-| TR-battle-system-015 | One crypto-random uint64 seed per battle, persisted in the battle record; child streams derive from (seed, domain_tag); Math.random never appears | ADR-0001 | 🟡 Proposed |
-| TR-battle-system-019 | Each round draws k=1 from the encounter's pool via the seeded question stream; no in-battle repeats; draw sequence is a pure function of (seed, pools) | ADR-0001 | 🟡 Proposed |
-| TR-battle-system-021 | Every battle carries an encounter-type config that selects pools, GhostProfile, ghost HP baseline and reveal delay; battle consumes it, never chooses content | ADR-0004 | 🟡 Proposed |
-| TR-battle-system-023 | Elimination draws come from battle's seeded stream — cross-system rule whose home GDD is equipment.md (Edge Case 10 / EQ25); battle owns the stream | ADR-0001 | 🟡 Proposed |
-| TR-battle-system-026 | Bit-exact replay: same seed + recorded commits reproduce the entire per-round log identically (BS36, blocked only on the PRNG ADR) | ADR-0001 | 🟡 Proposed |
+| TR-battle-system-003 | Battle runs on a fixed-tick simulated clock, not wall-clock setTimeout; ui-shell renders events and may fast-forward but never mutates battle state | ADR-0001 | ✅ Accepted |
+| TR-battle-system-011 | Crit fast path: elapsed < 3000 ms (strict) guarantees 1.25 with zero stream draws; otherwise exactly one draw from battle's crit stream at crit_stat/100 | ADR-0001 | ✅ Accepted |
+| TR-battle-system-015 | One crypto-random uint64 seed per battle, persisted in the battle record; child streams derive from (seed, domain_tag); Math.random never appears | ADR-0001 | ✅ Accepted |
+| TR-battle-system-019 | Each round draws k=1 from the encounter's pool via the seeded question stream; no in-battle repeats; draw sequence is a pure function of (seed, pools) | ADR-0001, ADR-0005 | ✅ Accepted |
+| TR-battle-system-021 | Every battle carries an encounter-type config that selects pools, GhostProfile, ghost HP baseline and reveal delay; battle consumes it, never chooses content | ADR-0004, ADR-0005 | ✅ Accepted |
+| TR-battle-system-023 | Elimination draws come from battle's seeded stream — cross-system rule whose home GDD is equipment.md (Edge Case 10 / EQ25); battle owns the stream | ADR-0001 | ✅ Accepted |
+| TR-battle-system-026 | Bit-exact replay: same seed + recorded commits reproduce the entire per-round log identically (BS36, blocked only on the PRNG ADR) | ADR-0001 | ✅ Accepted |
 | TR-battle-system-028 | Battle is exactly 4 rounds in fixed order (vocab_strike, grammar_shield, listening_pierce, ultimate_burst/fallback), fixed data never shuffled, 1:1 pool mapping | — | — Implementation tier |
 | TR-battle-system-029 | Battle reads exactly one immutable LoadoutSnapshot ({class_id, effective_stats, items}) at start; never mutates it or reads inventory mid-battle | — | — Implementation tier |
 | TR-battle-system-030 | Round state machine intro→question→commit|timeout→resolve→round_end→result; ghost reveal scheduled after answer_reveal_delay_ms_*; no skip past an unrevealed round | — | — Implementation tier |
@@ -157,13 +158,13 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-battle-system-050 | Speech-io boundary: listening consumes TTS of tts_text/ipa; ult consumes quality ∈ [0,1] (threshold 0.6 speech-io-owned); a payload missing both tts fields fails fast | — | — Implementation tier |
 | TR-battle-system-051 | Presentation budgets are ms targets that never gate battle-state advancement; CSS-only pipeline (no canvas/WebGL/shaders), fast-forwardable via Web Animations API | — | — Implementation tier |
 
-### equipment — 22 requirements (3 🟡 / 0 ❌ / 19 —)
+### equipment — 22 requirements (3 ✅ / 0 ❌ / 19 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-equipment-008 | LoadoutSnapshot publishes only after server commit acceptance; in-flight or failed commits record zero publications; the published object is frozen | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-equipment-009 | Stone application is one atomic whole-commit; server re-validates prerequisites (client gating is UI, not authority); snapshot republished only after acceptance | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-equipment-010 | Equipment state {item_levels, stones, equipped} is stored server-side by accounts-backend — no local game-state cache; offline changes blocked; disconnected view read-only | ADR-0002 | 🟡 Proposed |
+| TR-equipment-008 | LoadoutSnapshot publishes only after server commit acceptance; in-flight or failed commits record zero publications; the published object is frozen | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-equipment-009 | Stone application is one atomic whole-commit; server re-validates prerequisites (client gating is UI, not authority); snapshot republished only after acceptance | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-equipment-010 | Equipment state {item_levels, stones, equipped} is stored server-side by accounts-backend — no local game-state cache; offline changes blocked; disconnected view read-only | ADR-0002 | ✅ Accepted |
 | TR-equipment-019 | Ownership split: equipment owns catalog, slots, assembly, passive vocabulary, stone application; forge grants and stops; battle consumes the snapshot; accounts-backend stores | — | — Implementation tier |
 | TR-equipment-020 | Fixed 12-item catalog as data records (id, display name, slot, rarity, level, stats, perLevel, passive_id); all values in a data file, nothing hardcoded | — | — Implementation tier |
 | TR-equipment-021 | Four slots (weapon/armor/accessory/pet), one item each, never empty; default loadout filled at account creation; rarity has no mechanical effect at MVP | — | — Implementation tier |
@@ -184,14 +185,14 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-equipment-036 | Static assertion: the equipment module contains no Math.random, crypto.getRandomValues, Date.now or performance.now — fully deterministic data plus arithmetic | — | — Implementation tier |
 | TR-equipment-037 | The stored record carries only {item_levels, stones, equipped} — no derived stat fields; the server recomputes effective stats and rejects divergence | — | — Implementation tier |
 
-### forge-srs — 28 requirements (4 🟡 / 0 ❌ / 24 —)
+### forge-srs — 28 requirements (4 ✅ / 0 ❌ / 24 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-forge-srs-004 | Ownership split: battle emits cursed_runes in BattleResult (Rule 20 thresholds 6000/11000 ms) consumed as-is; accounts-backend owns server-side queue storage; question-content owns card schema | ADR-0002 | 🟡 Proposed |
-| TR-forge-srs-005 | The filler draw is the forge module's only randomness consumer and is DI-injected (outside battle's seeded streams) | ADR-0001 | 🟡 Proposed |
-| TR-forge-srs-006 | On a successful session the forge commit (runes consumed + stone granted) is one atomic commit point per accounts-backend AC-C1 | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-forge-srs-007 | QA-profile delay overrides shorten D1–D3 via build config/server data, never shipped defaults; no criterion waits real hours | ADR-0002 | 🟡 Proposed |
+| TR-forge-srs-004 | Ownership split: battle emits cursed_runes in BattleResult (Rule 20 thresholds 6000/11000 ms) consumed as-is; accounts-backend owns server-side queue storage; question-content owns card schema | ADR-0002 | ✅ Accepted |
+| TR-forge-srs-005 | The filler draw is the forge module's only randomness consumer and is DI-injected (outside battle's seeded streams) | ADR-0001 | ✅ Accepted |
+| TR-forge-srs-006 | On a successful session the forge commit (runes consumed + stone granted) is one atomic commit point per accounts-backend AC-C1 | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-forge-srs-007 | QA-profile delay overrides shorten D1–D3 via build config/server data, never shipped defaults; no criterion waits real hours | ADR-0002 | ✅ Accepted |
 | TR-forge-srs-016 | A rune is identified by word_id; a re-drop never duplicates — it resets the rune to Box 1 with a fresh due time and increments its drop count | — | — Implementation tier |
 | TR-forge-srs-017 | Every rune sits in one of three boxes with a stored per-rune due timestamp; a rune is eligible iff due_at ≤ now (inclusive) | — | — Implementation tier |
 | TR-forge-srs-018 | Session auto-composition pads to 3 cards with forge_filler drawn from the global glossary excluding every word currently in the rune queue (question-content E10 contract) | — | — Implementation tier |
@@ -217,12 +218,12 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-forge-srs-038 | Global glossary MVP bank is 32 entries with a build-gate floor of 24 (min_global_glossary_size) | — | — Implementation tier |
 | TR-forge-srs-039 | Browser storage (localStorage/sessionStorage/IndexedDB) holds no rune-queue or forge state; a fresh browser profile on the same account equals the server queue exactly | — | — Implementation tier |
 
-### hero-class — 30 requirements (2 🟡 / 0 ❌ / 28 —)
+### hero-class — 30 requirements (2 ✅ / 0 ❌ / 28 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-hero-class-006 | Exactly 3 classes at MVP, each a data record (stable ids wordsmith|grammarian|arcane, EN/VI names, icon, color, stat block, one passive); all values live in a data file, nothing hardcoded | ADR-0004 | 🟡 Proposed |
-| TR-hero-class-007 | fast_answer_threshold = 3.0 s (3000 ms) is one shared constant read by both consumers (battle guaranteed-crit rule and Wordsmith trigger); ownership provisionally hero-class's; single change point via the registry | ADR-0004 | 🟡 Proposed |
+| TR-hero-class-006 | Exactly 3 classes at MVP, each a data record (stable ids wordsmith|grammarian|arcane, EN/VI names, icon, color, stat block, one passive); all values live in a data file, nothing hardcoded | ADR-0004 | ✅ Accepted |
+| TR-hero-class-007 | fast_answer_threshold = 3.0 s (3000 ms) is one shared constant read by both consumers (battle guaranteed-crit rule and Wordsmith trigger); ownership provisionally hero-class's; single change point via the registry | ADR-0004 | ✅ Accepted |
 | TR-hero-class-016 | Stat vocabulary is exactly five stats (hp, atk, def, crit, time); mana is battle-economy owned by battle-system and flat +30/+10 for every class; equipment may modify the five but cannot grant mana | — | — Implementation tier |
 | TR-hero-class-017 | Class choice is permanent — picked during onboarding, fixed to the account for life, persisted by accounts-backend in the player profile and authoritative every session | — | — Implementation tier |
 | TR-hero-class-018 | Pinned baseline stat blocks (Wordsmith 380/80/30/12/+0.0 s; Grammarian 420/62/55/6/+1.0 s; Arcane 360/72/38/9/+0.5 s) as authored baseline; retune only via the tuning process | — | — Implementation tier |
@@ -252,7 +253,7 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-hero-class-042 | Pick screen renders the full class records (EN/VI names, icons, hex accent colors, passive text) and must state the choice is permanent before an explicit confirm action | — | — Implementation tier |
 | TR-hero-class-043 | OQ4: whether post-MVP class switching should be schema-tolerated (e.g. class_history field) must be decided before the accounts-backend schema freeze | — | — Implementation tier |
 
-### localization — 26 requirements (0 🟡 / 0 ❌ / 26 —)
+### localization — 26 requirements (0 ✅ / 0 ❌ / 26 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
@@ -283,14 +284,14 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-localization-042 | Key states must be machine-readable in the catalog build; the server error-code set is imported from accounts-backend's contract artifact, never hand-copied | — | — Implementation tier |
 | TR-localization-043 | ui-shell is the hard contract: its key inventory, F-UI2 (consumed as locale data, never redefined) and UI-AC21 sweep (promoted to this GDD's release gate) formalize the discipline | — | — Implementation tier |
 
-### meta-progression — 30 requirements (4 🟡 / 0 ❌ / 26 —)
+### meta-progression — 30 requirements (4 ✅ / 0 ❌ / 26 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-meta-progression-002 | Ledger application is event-driven and exactly-once, keyed on the battle's persisted seed; a re-delivered BattleResult produces zero ledger change and meta never recomputes a reward from battle state | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-meta-progression-003 | The board resets at the Asia/Ho_Chi_Minh day boundary on the server clock (fixed, no DST); unclaimed Claimable rewards expire and are lost silently | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-meta-progression-014 | MP2 ledger_apply: applied_seeds is an AB-stored set of committed seeds, never pruned; gold+xp+seed are written in one atomic commit and re-delivery computes (0,0) | ADR-0003 | 🟡 Proposed |
-| TR-meta-progression-017 | Meta owns exactly four stores (gold ledger, XP ledger + hero level, daily quest board, study-board counters); reward emission is battle's, storage is accounts-backend's, no sinks exist | ADR-0002 | 🟡 Proposed |
+| TR-meta-progression-002 | Ledger application is event-driven and exactly-once, keyed on the battle's persisted seed; a re-delivered BattleResult produces zero ledger change and meta never recomputes a reward from battle state | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-meta-progression-003 | The board resets at the Asia/Ho_Chi_Minh day boundary on the server clock (fixed, no DST); unclaimed Claimable rewards expire and are lost silently | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-meta-progression-014 | MP2 ledger_apply: applied_seeds is an AB-stored set of committed seeds, never pruned; gold+xp+seed are written in one atomic commit and re-delivery computes (0,0) | ADR-0003 | ✅ Accepted |
+| TR-meta-progression-017 | Meta owns exactly four stores (gold ledger, XP ledger + hero level, daily quest board, study-board counters); reward emission is battle's, storage is accounts-backend's, no sinks exist | ADR-0002 | ✅ Accepted |
 | TR-meta-progression-019 | An event carrying an unknown reward type is rejected fail-fast naming the emitter — never clamped, no partial ledger write | — | — Implementation tier |
 | TR-meta-progression-020 | Final reward values are owned here (victory gold 120 / boss 250 / defeat 40; xp 180/60); battle's Rule 21 table is a mirrored copy, not the authority | — | — Implementation tier |
 | TR-meta-progression-021 | Hero level = floor(cumulative_xp / xp_per_level) + 1 with flat xp_per_level = 1000 and no level cap (level gates nothing at MVP) | — | — Implementation tier |
@@ -318,15 +319,15 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-meta-progression-043 | No cap, decay or replay-counter constant or state exists for replay farming — uncapped by design, a cap would be a deliberate post-MVP addition re-opening Core Rule 6 | — | — Implementation tier |
 | TR-meta-progression-044 | One battle commit moves ledgers, both quests, streak and last_battle_day in ONE atomic seed-keyed commit — all five effects or none on mid-commit failure (whole-commit rejection) | — | — Implementation tier |
 
-### opponent-ai — 21 requirements (5 🟡 / 0 ❌ / 16 —)
+### opponent-ai — 21 requirements (5 ✅ / 0 ❌ / 16 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-opponent-ai-008 | F2 rule 1: deterministic seedable platform-stable PRNG, uniform [0,1), same sequence on every browser; Math.random never; algorithm is ADR territory | ADR-0001 | 🟡 Proposed |
-| TR-opponent-ai-009 | F2 rule 2: one stream per battle, seeded exactly once from battle's uint64 seed, never re-seeded mid-battle | ADR-0001 | 🟡 Proposed |
-| TR-opponent-ai-010 | Consumption discipline: exactly one draw per round in strict round order, nothing else draws, no re-draw; the ghost sequence depends only on (seed, profile) | ADR-0001 | 🟡 Proposed |
-| TR-opponent-ai-011 | F2 rule 5: draws convert once to fixed-point integers in [0, 2^53) and compare strictly < against accuracy_threshold = round(accuracy × 2^53) | ADR-0001 | 🟡 Proposed |
-| TR-opponent-ai-014 | QA statistical surface: over N ≥ 1000 seeded battles, per-tier frequency within ±0.03 of p and per-battle counts pass a Binomial(4, p) goodness-of-fit at α = 0.01 | ADR-0001 | 🟡 Proposed |
+| TR-opponent-ai-008 | F2 rule 1: deterministic seedable platform-stable PRNG, uniform [0,1), same sequence on every browser; Math.random never; algorithm is ADR territory | ADR-0001 | ✅ Accepted |
+| TR-opponent-ai-009 | F2 rule 2: one stream per battle, seeded exactly once from battle's uint64 seed, never re-seeded mid-battle | ADR-0001 | ✅ Accepted |
+| TR-opponent-ai-010 | Consumption discipline: exactly one draw per round in strict round order, nothing else draws, no re-draw; the ghost sequence depends only on (seed, profile) | ADR-0001 | ✅ Accepted |
+| TR-opponent-ai-011 | F2 rule 5: draws convert once to fixed-point integers in [0, 2^53) and compare strictly < against accuracy_threshold = round(accuracy × 2^53) | ADR-0001 | ✅ Accepted |
+| TR-opponent-ai-014 | QA statistical surface: over N ≥ 1000 seeded battles, per-tier frequency within ±0.03 of p and per-battle counts pass a Binomial(4, p) goodness-of-fit at α = 0.01 | ADR-0001 | ✅ Accepted |
 | TR-opponent-ai-017 | The ghost is a deterministic resolver: ghost_correct = roll < accuracy from a seeded stream, exactly one roll per round, strict comparison; result final, never re-rolled | — | — Implementation tier |
 | TR-opponent-ai-018 | The resolver is question-unaware: it receives only round context (encounter type, round index), never question payload content or answer | — | — Implementation tier |
 | TR-opponent-ai-019 | GhostProfile records (ghost_id, display_name, class_ref, accuracy, hp, is_boss, flavor_note) live in a data file, unique ids, no identity in source code | — | — Implementation tier |
@@ -344,29 +345,29 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-opponent-ai-031 | An unknown class_ref fails at profile load (fail fast) — no default-class fallback exists | — | — Implementation tier |
 | TR-opponent-ai-032 | GhostProfiles ship as static client-side config at MVP; moving them to accounts-backend's versioned payload is a contract change, not a config edit | — | — Implementation tier |
 
-### question-content — 28 requirements (3 🟡 / 0 ❌ / 25 —)
+### question-content — 28 requirements (10 ✅ / 0 ❌ / 18 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-question-content-006 | All content hand-authored as data (JSON/TS data modules in a content directory) — no procedural generation, no runtime authoring UI at MVP | ADR-0004 | 🟡 Proposed |
-| TR-question-content-007 | One global content version — deliverable is a single versioned payload (version + banks); any content change bumps the version; per-module versioning post-MVP would be a contract change | ADR-0002 | 🟡 Proposed |
-| TR-question-content-012 | System owns only the "what": no mixing policy, no scheduling, no delivery/caching, no mastery records, no per-question difficulty field, and no selection/mixing/scheduling API in its exports | ADR-0002, ADR-0004 | 🟡 Proposed |
+| TR-question-content-006 | All content hand-authored as data (JSON/TS data modules in a content directory) — no procedural generation, no runtime authoring UI at MVP | ADR-0004 | ✅ Accepted |
+| TR-question-content-007 | One global content version — deliverable is a single versioned payload (version + banks); any content change bumps the version; per-module versioning post-MVP would be a contract change | ADR-0002 | ✅ Accepted |
+| TR-question-content-012 | System owns only the "what": no mixing policy, no scheduling, no delivery/caching, no mastery records, no per-question difficulty field, and no selection/mixing/scheduling API in its exports | ADR-0002, ADR-0004 | ✅ Accepted |
 | TR-question-content-017 | One schema family: base shape (id, type, module, cefr, prompt) plus 6 typed payloads in a discriminated union (vocab_strike, grammar_shield, listening_pierce, spell_challenge, forge_recall, forge_filler) with per-type required fields | — | — Implementation tier |
 | TR-question-content-018 | Strict schema: a payload carrying a field not in its type's schema fails the build; adding a field means changing the schema first | — | — Implementation tier |
 | TR-question-content-019 | Glossary entries are the atoms — questions reference word_id, never inline strings; fields include term, vi_meaning, ipa, tts_text, part_of_speech, cefr, module_tags[], etymology, example_sentence, status (active|deprecated) | — | — Implementation tier |
-| TR-question-content-020 | Pools keyed module × round-type (battle) and module × stage incl. separate boss pool (tower, 3 stages + boss); forge_recall built at runtime from the rune queue, forge_filler drawn from the global glossary | — | — Implementation tier |
+| TR-question-content-020 | Pools keyed module × round-type (battle) and module × stage incl. separate boss pool (tower, 3 stages + boss); forge_recall built at runtime from the rune queue, forge_filler drawn from the global glossary | ADR-0005 | ✅ Accepted |
 | TR-question-content-021 | Ownership split: schema/bank/validation here; mixing to battle-system, stage selection to tower, card selection + SRS scheduling to forge-srs, delivery to accounts-backend | — | — Implementation tier |
 | TR-question-content-022 | Validation is a build gate failing the build on duplicate ids, unresolvable word_id, missing required fields, distractor count/answer violations, cefr-band mismatch, listening entries missing both tts_text and ipa | — | — Implementation tier |
 | TR-question-content-023 | Authoring-side lifecycle states Draft → Validated → Published → Superseded; Draft never eligible for a payload; Superseded invalidates client caches at next full load | — | — Implementation tier |
 | TR-question-content-024 | speech-io consumes tts_text + ipa from listening_pierce payloads; fields exist here so degraded-mode fallback never needs a schema change | — | — Implementation tier |
 | TR-question-content-025 | Equipment passives consume word-entry fields — Etymology Charm → etymology, 50/50 → distractor lists, first-letter assist → term; this system guarantees the fields exist and are populated | — | — Implementation tier |
-| TR-question-content-026 | MVP battle draws exactly k = 1 per round; a tower stage battle is the standard 4-round shape drawing k = 1 per round from the mixed module × stage pool under battle Rule 22 (composition gate ≥ 1 per round-type) | — | — Implementation tier |
-| TR-question-content-027 | All five pool constants live in ONE content-config data file (content/config/pool-minimums.ts) consumed by the build gate; battle-system, tower and forge-srs read the same constants — never hardcode | — | — Implementation tier |
-| TR-question-content-028 | Battle-pool build gate: N_battle ≥ min_battle_pool_size, default 8, per module × round-type | — | — Implementation tier |
-| TR-question-content-029 | Tower stage-pool build gate: N_stage ≥ 6 per module × stage (non-boss) plus composition gate ≥ 1 question per round-type | — | — Implementation tier |
-| TR-question-content-030 | Tower boss-pool build gate: N_boss ≥ 4 per module × boss, composition gate applies too | — | — Implementation tier |
+| TR-question-content-026 | MVP battle draws exactly k = 1 per round; a tower stage battle is the standard 4-round shape drawing k = 1 per round from the mixed module × stage pool under battle Rule 22 (composition gate ≥ 1 per round-type) | ADR-0005 | ✅ Accepted |
+| TR-question-content-027 | All five pool constants live in ONE content-config data file (content/config/pool-minimums.ts) consumed by the build gate; battle-system, tower and forge-srs read the same constants — never hardcode | ADR-0005 | ✅ Accepted |
+| TR-question-content-028 | Battle-pool build gate: N_battle ≥ min_battle_pool_size, default 8, per module × round-type | ADR-0005 | ✅ Accepted |
+| TR-question-content-029 | Tower stage-pool build gate: N_stage ≥ 6 per module × stage (non-boss) plus composition gate ≥ 1 question per round-type | ADR-0005 | ✅ Accepted |
+| TR-question-content-030 | Tower boss-pool build gate: N_boss ≥ 4 per module × boss, composition gate applies too | ADR-0005 | ✅ Accepted |
 | TR-question-content-031 | Global glossary build gate: N_glossary ≥ 24 (MVP bank target 32 as authoring target, not gate); per-module distinct words ≥ 8 checked alongside pool counts | — | — Implementation tier |
-| TR-question-content-032 | battles_before_repeat = floor(N_pool / k) with design rule battles_before_repeat ≥ 2 × battles_per_typical_session per mode | — | — Implementation tier |
+| TR-question-content-032 | battles_before_repeat = floor(N_pool / k) with design rule battles_before_repeat ≥ 2 × battles_per_typical_session per mode | ADR-0005 | ✅ Accepted |
 | TR-question-content-033 | Duplicate vi_meaning pair in the glossary alone is a build warning; the same pair inside one vi_en question (answer + distractors) is a build failure | — | — Implementation tier |
 | TR-question-content-034 | listening_pierce with ipa but no tts_text is playable (tts_text defaults to term); missing both fails the build | — | — Implementation tier |
 | TR-question-content-035 | tile_letters multiset must equal the term's letter multiset (case-insensitive, duplicates included) or the build fails | — | — Implementation tier |
@@ -377,18 +378,18 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-question-content-040 | Duplicate ids fail the build with file + id reported; no partial payload is ever produced | — | — Implementation tier |
 | TR-question-content-041 | Payload must be render-complete — empty prompt or vi_meaning treated as a missing required field and fails the build | — | — Implementation tier |
 
-### ranked-league — 27 requirements (8 🟡 / 0 ❌ / 19 —)
+### ranked-league — 27 requirements (8 ✅ / 0 ❌ / 19 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-ranked-league-001 | Persisted ranked state is one RP integer plus season objects (roster blob, placement record, applied-commit keys); tier/division derived on read, never stored. | ADR-0002 | 🟡 Proposed |
-| TR-ranked-league-004 | Ranked RP commits are server-computed: the backend verifies the outcome against battle seed + submitted answer log before applying any delta. | ADR-0003 | 🟡 Proposed |
-| TR-ranked-league-005 | The battle→RP commit is atomic with the battle result and seed-keyed exactly-once (same-seed re-delivery is a no-op). | ADR-0002, ADR-0003 | 🟡 Proposed |
-| TR-ranked-league-006 | Failed server verification refuses the RP delta: RP and history stay exactly pre-commit and the rejection is recorded against the account. | ADR-0003 | 🟡 Proposed |
-| TR-ranked-league-009 | Ranked module rotates daily over the four modules by server date, reusing existing module × round-type pools (no new pool type). | ADR-0001 | 🟡 Proposed |
-| TR-ranked-league-010 | RL3: peer board = H(season_id‖account_id‖i); season blob stores base_i/mastered_i/streak_i; daily drift ±20 stateless per (peer, day), recomputed. | ADR-0001 | 🟡 Proposed |
-| TR-ranked-league-011 | RL3: H is the PRNG-ADR-pinned hash; rng_int = lo + H(seed) mod (hi−lo+1); ADR must bless modulo-bias handling (ranges here ≤ 501). | ADR-0001 | 🟡 Proposed |
-| TR-ranked-league-018 | accounts-backend (Hard) owns RP total + history storage, identity, server clock (season boundary, rotation, grace) and ranked outcome validation. | ADR-0002 | 🟡 Proposed |
+| TR-ranked-league-001 | Persisted ranked state is one RP integer plus season objects (roster blob, placement record, applied-commit keys); tier/division derived on read, never stored. | ADR-0002 | ✅ Accepted |
+| TR-ranked-league-004 | Ranked RP commits are server-computed: the backend verifies the outcome against battle seed + submitted answer log before applying any delta. | ADR-0003 | ✅ Accepted |
+| TR-ranked-league-005 | The battle→RP commit is atomic with the battle result and seed-keyed exactly-once (same-seed re-delivery is a no-op). | ADR-0002, ADR-0003 | ✅ Accepted |
+| TR-ranked-league-006 | Failed server verification refuses the RP delta: RP and history stay exactly pre-commit and the rejection is recorded against the account. | ADR-0003 | ✅ Accepted |
+| TR-ranked-league-009 | Ranked module rotates daily over the four modules by server date, reusing existing module × round-type pools (no new pool type). | ADR-0001 | ✅ Accepted |
+| TR-ranked-league-010 | RL3: peer board = H(season_id‖account_id‖i); season blob stores base_i/mastered_i/streak_i; daily drift ±20 stateless per (peer, day), recomputed. | ADR-0001 | ✅ Accepted |
+| TR-ranked-league-011 | RL3: H is the PRNG-ADR-pinned hash; rng_int = lo + H(seed) mod (hi−lo+1); ADR must bless modulo-bias handling (ranges here ≤ 501). | ADR-0001 | ✅ Accepted |
+| TR-ranked-league-018 | accounts-backend (Hard) owns RP total + history storage, identity, server clock (season boundary, rotation, grace) and ranked outcome validation. | ADR-0002 | ✅ Accepted |
 | TR-ranked-league-019 | RP deltas (+28 win / −14 loss) reach the ladder only via committed BattleResults with encounter=ranked, applied through accounts-backend; friend/tower never touch it. | — | — Implementation tier |
 | TR-ranked-league-020 | New account initializes at RP 0 (Bronze III); the prototype's 1420 start is a demo fixture kept out of the initialization path. | — | — Implementation tier |
 | TR-ranked-league-021 | Demotion is automatic unprotected re-derivation — no shield, grace-game or decay state exists at Alpha. | — | — Implementation tier |
@@ -396,7 +397,7 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-ranked-league-023 | Season = Monday 00:00 → Sunday 24:00 Asia/Ho_Chi_Minh; 14-peer group drawn deterministically from season_id + account identity; RP never resets at rollover. | — | — Implementation tier |
 | TR-ranked-league-024 | PvP tab sorts by RP desc, Study tab by mastered_words desc then streak desc; zone highlights are presentation mirrors granting nothing. | — | — Implementation tier |
 | TR-ranked-league-025 | Study payload adopted verbatim: {mastered_words, streak} read through accounts-backend; no per-word detail or battle-only streak variant. | — | — Implementation tier |
-| TR-ranked-league-026 | A started ranked battle with no committed result within the 15-min grace window (ranked_forfeit_grace_min, provisional, safe 10–30) records one forfeit: −14, no rewards/runes. | — | — Implementation tier |
+| TR-ranked-league-026 | A started ranked battle with no committed result within the 15-min grace window (ranked_forfeit_grace_min, blessed 15, safe band 10–30, measured from started_at — ADR-0003 §4; client events do not extend it) records one forfeit: −14, no rewards/runes. | — | — Implementation tier |
 | TR-ranked-league-027 | Ranked-league emits data-only semantics (colors, zones, labels, transitions as data); all rendering is ui-shell's. | — | — Implementation tier |
 | TR-ranked-league-028 | Season transitions Active → Settling at Monday 00:00 ICT and back; the per-account league group (Live/Settled) is wiped at next rollover. | — | — Implementation tier |
 | TR-ranked-league-029 | RL1: tier/division resolver is integer-only, pure function of rp; floors 0/1000/1300/1600/1900 data-file; GM virtual next-floor 2200 caps span. | — | — Implementation tier |
@@ -409,13 +410,13 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-ranked-league-036 | A ranked commit racing a quest claim goes through whole-commit rejection; RP and quest rewards never merge into a partial write. | — | — Implementation tier |
 | TR-ranked-league-037 | Analytics (downstream, post-MVP) receives RP events, season rollover and forfeit events as telemetry. | — | — Implementation tier |
 
-### real-pvp — 26 requirements (3 🟡 / 1 ❌ / 22 —)
+### real-pvp — 26 requirements (3 ✅ / 1 ❌ / 22 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-real-pvp-002 | B-series from one shared module ("one formula module, two hosts"); formula drift = build failure; package extracted + server-tested before PvP work (OQ-RVP1). | ADR-0004 | 🟡 Proposed |
-| TR-real-pvp-003 | Server draws one shared question set (k=1, ≥ 8 gates); per-round delivery, never bundled at Matched; F5 no-repeat guard runs server-side. | ADR-0003 | 🟡 Proposed |
-| TR-real-pvp-016 | Server runs the round engine and owns question draw, clocks, validation, RNG (server-seeded), damage, verdict; clients compute nothing consequential. | ADR-0003 | 🟡 Proposed |
+| TR-real-pvp-002 | B-series from one shared module ("one formula module, two hosts"); formula drift = build failure; package extracted + server-tested before PvP work (OQ-RVP1). | ADR-0004 | ✅ Accepted |
+| TR-real-pvp-003 | Server draws one shared question set (k=1, ≥ 8 gates); per-round delivery, never bundled at Matched; F5 no-repeat guard runs server-side. | ADR-0003 | ✅ Accepted |
+| TR-real-pvp-016 | Server runs the round engine and owns question draw, clocks, validation, RNG (server-seeded), damage, verdict; clients compute nothing consequential. | ADR-0003 | ✅ Accepted |
 | TR-real-pvp-018 | Answer privacy: a commit is never revealed to the opponent before resolve; the resolve payload broadcasts to both clients simultaneously. | — | — Implementation tier |
 | TR-real-pvp-019 | Shared window W = max of both players' B1 clocks; a commit past the personal deadline is recorded, scored as timeout (elapsed clamped, B2 1.0, void). | — | — Implementation tier |
 | TR-real-pvp-020 | Attacker deals verbatim B-series output; defender mitigates via B9 shape (25% ceiling), shield-first from own B6 pool; own LoadoutSnapshot hero HP. | — | — Implementation tier |
@@ -440,11 +441,11 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-real-pvp-039 | Provisional: question draw API must be server-callable with same build gates; speech quality scored server-side (OQ-RVP3); ladder needs PvP-source + draw events. | ADR #8 — server-side speech scoring (OQ-RVP3; server-callable draw also rides ADR #7) | ❌ Pending ADR |
 | TR-real-pvp-040 | Cross-host golden test: shared-module damage outputs must equal ghost-battle outputs for identical inputs (blocked-by OQ-RVP1). | — | — Implementation tier |
 
-### speech-io — 30 requirements (1 🟡 / 0 ❌ / 29 —)
+### speech-io — 30 requirements (1 ✅ / 0 ❌ / 29 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-speech-io-008 | All quality passes one interface `score(target_word, attempt) → quality ∈ [0,1]`; MVP `SimulatedScorer` (random 0.88–0.98) is replaceable by a real engine without gameplay changes | ADR-0003 | 🟡 not-preclude contract |
+| TR-speech-io-008 | All quality passes one interface `score(target_word, attempt) → quality ∈ [0,1]`; MVP `SimulatedScorer` (random 0.88–0.98) is replaceable by a real engine without gameplay changes | ADR-0003 | ✅ not-preclude contract |
 | TR-speech-io-016 | Speech-io is a service layer, not a game state owner: owns rendering, capability detection, fallback selection, quality scoring; no battle state/timer/question data/SFX | — | — Implementation tier |
 | TR-speech-io-017 | Listening rounds consume the question payload's `tts_text` (consumers read an effective value; speech-io never substitutes the `term` default) and optional `ipa` | — | — Implementation tier |
 | TR-speech-io-018 | Playback never gates the round (timer starts at options-actionable, BS7); replays never reset/pause/extend the timer; playback is cut immediately at commit | — | — Implementation tier |
@@ -475,16 +476,16 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-speech-io-043 | Speech-io owns the single speech audio stream (zero SFX/music); speech is cut, never faded, at commit; one voice instance, never overlapping playbacks | — | — Implementation tier |
 | TR-speech-io-044 | Real mic capture and acoustic TTS output are never AC-asserted; tests run at interface boundaries with injected doubles — the scorer interface and injectable platform RNG are the designed seams | — | — Implementation tier |
 
-### tower — 25 requirements (2 🟡 / 0 ❌ / 23 —)
+### tower — 25 requirements (4 ✅ / 0 ❌ / 21 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-tower-002 | Progression state is exactly per-module per-slot cleared:bool (unlock derived, never stored), re-derived from the battle result on load | ADR-0002 | 🟡 Proposed |
-| TR-tower-003 | Progression commits through the tower stage result commit point, atomic with the battle result | ADR-0002 | 🟡 Proposed |
+| TR-tower-002 | Progression state is exactly per-module per-slot cleared:bool (unlock derived, never stored), re-derived from the battle result on load | ADR-0002 | ✅ Accepted |
+| TR-tower-003 | Progression commits through the tower stage result commit point, atomic with the battle result | ADR-0002 | ✅ Accepted |
 | TR-tower-016 | Tower structure is data-defined: tower_floor_count=4 and tower_stages_per_floor=3 are registry constants; floors 2–4 open when their module passes build-gate validation | — | — Implementation tier |
 | TR-tower-017 | Sequential unlock: floor n unlocked iff floor n−1 boss cleared; stage s iff s−1 cleared; boss iff all 3 stages cleared — the boss clear is the only key | — | — Implementation tier |
-| TR-tower-018 | Encounter config is exactly {module_id, stage_ref (1|2|3|boss), encounter_type ("tower_stage"|"tower_boss"), ghost_profile_ref}; ghost profile resolves from opponent-ai by encounter_type (HP 420/600, accuracy 0.55/0.75, reveal 1200/1500 ms) | — | — Implementation tier |
-| TR-tower-019 | Tower battles are the unchanged 4-round battle with k=1 seeded draw per round by battle-system Rule 22; pool minimums stage ≥6 / boss ≥4; tower adds no round types, modifiers or scaling | — | — Implementation tier |
+| TR-tower-018 | Encounter config is exactly {module_id, stage_ref (1|2|3|boss), encounter_type ("tower_stage"|"tower_boss"), ghost_profile_ref}; ghost profile resolves from opponent-ai by encounter_type (HP 420/600, accuracy 0.55/0.75, reveal 1200/1500 ms) | ADR-0005 | ✅ Accepted |
+| TR-tower-019 | Tower battles are the unchanged 4-round battle with k=1 seeded draw per round by battle-system Rule 22; pool minimums stage ≥6 / boss ≥4; tower adds no round types, modifiers or scaling | ADR-0005 | ✅ Accepted |
 | TR-tower-020 | The pre-battle preview is deterministic (pure union of the pool — no RNG, no concealment) and skippable but always shown first | — | — Implementation tier |
 | TR-tower-021 | Every attempt (win or lose) records via accounts-backend's "tower stage result" commit point; no energy, lives, keys or wait-timer state exists | — | — Implementation tier |
 | TR-tower-022 | Cleared content is replayable but replays never change progression state — cleared flags are monotone and never unset | — | — Implementation tier |
@@ -505,11 +506,11 @@ Engine: Web — React ^19.0.0 + TypeScript ^5.7.0 + Vite ^8.0.5 + Tailwind CSS ^
 | TR-tower-037 | A battle result for an encounter tower did not configure is discarded for progression purposes — cleared flags change only for a config issued in the current attempt session | — | — Implementation tier |
 | TR-tower-038 | For E14's foreign-result discard to bind in production, BattleResult must echo the issued encounter config (or an id) — implementation decision flagged to lead-programmer | — | — Implementation tier |
 
-### ui-shell — 28 requirements (1 🟡 / 0 ❌ / 27 —)
+### ui-shell — 28 requirements (1 ✅ / 0 ❌ / 27 —)
 
 | TR-ID | Requirement | ADR | Status |
 |-------|-------------|-----|--------|
-| TR-ui-shell-001 | Rendering-only ownership: ui-shell never recomputes game state — every displayed number/label/state is a formatted read of upstream state; only display math lives here | ADR-0004 | 🟡 Proposed |
+| TR-ui-shell-001 | Rendering-only ownership: ui-shell never recomputes game state — every displayed number/label/state is a formatted read of upstream state; only display math lives here | ADR-0004 | ✅ Accepted |
 | TR-ui-shell-017 | Screen inventory scoped by feature tier (MVP: Auth, class pick, Home, Battle, Forge, Tower, Inventory, global overlays; VS adds quest/currency/streak; Alpha adds League); absent screen = not scope | — | — Implementation tier |
 | TR-ui-shell-018 | Hub-and-spoke navigation from Home; battle exits only through its result modal (mid-battle back = forfeit/discard); unauthenticated deep links land on Auth — no guest entry | — | — Implementation tier |
 | TR-ui-shell-019 | Every commit-requiring action renders the accounts-backend commit machine (Idle→Committing→Retrying with client-side `retry_delay` ladder→Unsaved→Idle); navigation blocked while Committing/Retrying | — | — Implementation tier |
@@ -567,7 +568,9 @@ GDDs, the coding standards, and the control manifest. They are not architectural
 
 ## Superseded Requirements
 
-None. No registry requirement was superseded by this review. One GDD wording conflict was
-flagged for revision (ranked-league grace-window constant table vs ADR-0003 §4) — recorded
-as a GDD Revision Flag in the review report, to be applied at the GDD's next edit with a
-`revised:` date on the registry entry; the ID stays.
+None. No registry requirement was superseded by this review. The 2026-11-09 run's one GDD
+revision flag that carried a registry implication (ranked-league grace-window constant table
+vs ADR-0003 §4) was **applied** in the ranked GDD 2026-11-10 (Core Rule 11 + constant table
+re-pinned to `started_at`); the remaining open flags (battle/opponent-ai `resolve_round`
+`input_source` parameter) carry no registry text change — tracked in the 2026-11-10 review
+report's GDD Revision Flags.
