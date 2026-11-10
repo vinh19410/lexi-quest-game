@@ -115,7 +115,7 @@ constants.
 | `Result` | Victory/defeat computed; `BattleResult` emitted (runes, rewards, seed, per-round log) | → exit (to Forge / queue / home — caller's choice) |
 
 - Battle length is fixed at 4 rounds **or** first KO, whichever comes first. There is no draw state: Rule 19 always produces a winner.
-- There is **no forfeit state at MVP**: abandoning the session (tab close) discards the battle with no `BattleResult` emitted — no runes, no rewards (Edge Cases). A mid-battle reconnect/resume is post-MVP.
+- There is **no forfeit state at MVP**: abandoning the session (tab close) discards the battle with no `BattleResult` emitted — no runes, no rewards (Edge Cases). Ranked forfeit is server-side and needs no battle state: ADR-0003 §4 records an open ranked registration as forfeited at T+15 min (RP −14, no rewards, no runes); battle's silent discard stands unchanged at every stage. Mid-battle reconnect/resume is post-MVP (OQ-BS8's resume half).
 - The ghost has no observable state machine of its own from battle's perspective: one `resolve_round` call per round, result consumed, theater scheduled.
 
 ### Interactions with Other Systems
@@ -690,4 +690,4 @@ directly. (Note in systems index at Phase 5.)
 | OQ-BS5 | **RESOLVED 2026-11-09** — speech-io's GDD owns the contract: `quality_success_threshold` 0.6 gates the pass/fail; no quality floor at MVP (the ≈ 0.15 floor lever stays the documented fallback if playtest shows the ±350 swing too swingy). BS11's provisional tag dropped per speech-io OQ-SI2 | closed (speech-io owner) | speech-io GDD (Approved) |
 | OQ-BS6 | `battles_per_typical_session = 4` is an estimate, not retention data: re-estimate from first playtest telemetry; if sessions run longer, raise `N_battle` inside question-content's 8–16 band (F5 signal) | battle-system owner / playtest | post-first-playtest |
 | OQ-BS7 | PRNG ADR dependency chain for stats: F3's statistical ACs (ghost frequency ±0.03 over 1000 battles) and this GDD's stream ACs all block on OQ-BS1 | qa-lead | with OQ-BS1 |
-| OQ-BS8 | forfeit/resume: MVP discards abandoned battles with no BattleResult (Edge Cases). Mid-battle reconnect + replay-from-log is post-MVP scope — decide when ranked play starts | project owner | pre-Alpha |
+| OQ-BS8 | resume half only: forfeit is decided (ADR-0003 §4 — server-side grace expiry, no battle state; Edge Cases cross-ref added 2026-11-10). Mid-battle reconnect + replay-from-log remains post-MVP scope — decide when ranked play starts | project owner | pre-Alpha |
